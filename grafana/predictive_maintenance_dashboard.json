@@ -1,44 +1,75 @@
 {
-  "title": "Reliability and Predictive Maintenance Layer",
-  "timezone": "browser",
-  "schemaVersion": 39,
-  "version": 1,
-  "refresh": "10s",
-  "tags": ["industrial", "predictive-maintenance", "portfolio"],
+  "annotations": {"list": []},
+  "editable": false,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
   "panels": [
     {
-      "type": "timeseries",
-      "title": "Condition Index",
-      "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8},
-      "targets": [
-        {
-          "refId": "A",
-          "query": "from(bucket: \"maintenance\") |> range(start: -6h) |> filter(fn: (r) => r._measurement == \"condition\" and r._field == \"condition_index\")"
-        }
-      ]
+      "datasource": {"type": "influxdb", "uid": "influxdb-maintenance"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "max": 100,
+          "min": 0,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 40}, {"color": "red", "value": 70}]},
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 6, "w": 5, "x": 0, "y": 0},
+      "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
+      "targets": [{"query": "from(bucket: \"${INFLUXDB_BUCKET}\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"condition_window\" and r._field == \"condition_index\") |> last()", "refId": "A"}],
+      "title": "Current Condition Index",
+      "type": "stat"
     },
     {
-      "type": "timeseries",
-      "title": "Vibration RMS and 1x FFT",
-      "gridPos": {"x": 12, "y": 0, "w": 12, "h": 8},
-      "targets": [
-        {
-          "refId": "A",
-          "query": "from(bucket: \"maintenance\") |> range(start: -6h) |> filter(fn: (r) => r._measurement == \"features\" and (r._field == \"vib_rms_g\" or r._field == \"vib_fft_1x_g\"))"
-        }
-      ]
+      "datasource": {"type": "influxdb", "uid": "influxdb-maintenance"},
+      "fieldConfig": {"defaults": {"custom": {"drawStyle": "line", "fillOpacity": 12, "lineWidth": 2, "showPoints": "never"}, "unit": "percent"}, "overrides": []},
+      "gridPos": {"h": 6, "w": 19, "x": 5, "y": 0},
+      "options": {"legend": {"calcs": ["lastNotNull", "max"], "displayMode": "table", "placement": "right", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [{"query": "from(bucket: \"${INFLUXDB_BUCKET}\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"condition_window\" and r._field == \"condition_index\")", "refId": "A"}],
+      "title": "Condition Trend",
+      "type": "timeseries"
     },
     {
-      "type": "table",
-      "title": "Active Recommendations",
-      "gridPos": {"x": 0, "y": 8, "w": 24, "h": 8},
-      "targets": [
-        {
-          "refId": "A",
-          "query": "from(bucket: \"maintenance\") |> range(start: -24h) |> filter(fn: (r) => r._measurement == \"recommendations\")"
-        }
-      ]
+      "datasource": {"type": "influxdb", "uid": "influxdb-maintenance"},
+      "fieldConfig": {"defaults": {"custom": {"drawStyle": "line", "fillOpacity": 8, "lineWidth": 1, "showPoints": "never"}, "unit": "accG"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 6},
+      "options": {"legend": {"calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [{"query": "from(bucket: \"${INFLUXDB_BUCKET}\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"condition_window\" and (r._field == \"vib_rms_g\" or r._field == \"vib_fft_1x_g\"))", "refId": "A"}],
+      "title": "Vibration RMS and Shaft 1x",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "influxdb", "uid": "influxdb-maintenance"},
+      "fieldConfig": {"defaults": {"custom": {"drawStyle": "line", "fillOpacity": 8, "lineWidth": 1, "showPoints": "never"}}, "overrides": [{"matcher": {"id": "byName", "options": "current_mean_a"}, "properties": [{"id": "unit", "value": "amp"}]}, {"matcher": {"id": "byName", "options": "temperature_mean_c"}, "properties": [{"id": "unit", "value": "celsius"}]}]},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 6},
+      "options": {"legend": {"calcs": ["lastNotNull", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [{"query": "from(bucket: \"${INFLUXDB_BUCKET}\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"condition_window\" and (r._field == \"current_mean_a\" or r._field == \"temperature_mean_c\"))", "refId": "A"}],
+      "title": "Electrical and Thermal Load",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "influxdb", "uid": "influxdb-maintenance"},
+      "fieldConfig": {"defaults": {}, "overrides": []},
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 14},
+      "options": {"cellHeight": "sm", "showHeader": true},
+      "targets": [{"query": "from(bucket: \"${INFLUXDB_BUCKET}\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"condition_window\" and r._field == \"condition_index\") |> group(columns: [\"asset_id\", \"diagnosis\", \"severity\"]) |> last() |> keep(columns: [\"_time\", \"asset_id\", \"diagnosis\", \"severity\", \"_value\"])", "refId": "A"}],
+      "title": "Latest Diagnostic State by Asset",
+      "transformations": [{"id": "organize", "options": {"excludeByName": {}, "indexByName": {}, "renameByName": {"_time": "Timestamp", "_value": "Condition Index", "asset_id": "Asset", "diagnosis": "Diagnosis", "severity": "Severity"}}}],
+      "type": "table"
     }
-  ]
+  ],
+  "refresh": "10s",
+  "schemaVersion": 40,
+  "tags": ["industrial", "predictive-maintenance", "reliability"],
+  "templating": {"list": [{"current": {"selected": true, "text": "maintenance", "value": "maintenance"}, "hide": 2, "label": "InfluxDB bucket", "name": "INFLUXDB_BUCKET", "options": [{"selected": true, "text": "maintenance", "value": "maintenance"}], "query": "maintenance", "skipUrlSync": true, "type": "constant"}]},
+  "time": {"from": "now-24h", "to": "now"},
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Reliability and Predictive Maintenance Layer",
+  "uid": "rpm-condition-monitoring",
+  "version": 2,
+  "weekStart": ""
 }
-

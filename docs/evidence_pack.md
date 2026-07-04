@@ -17,5 +17,6 @@ The project generates a complete review pack with `python scripts/run_demo.py`.
 | `output/demo/condition_windows.lp` | InfluxDB line protocol for time-series ingestion |
 | `output/demo/mqtt_outbox.jsonl` | MQTT-style condition, alert, and recommendation messages |
 | `output/demo/opcua_snapshot.json` | OPC UA-facing node snapshot for supervisory integration |
+| `output/demo/telemetry_replay.jsonl` | CI smoke evidence from the paced acquisition replay path |
 
 The raw telemetry file is intentionally ignored because it is reproducible and large. Reviewers should regenerate it instead of versioning it.

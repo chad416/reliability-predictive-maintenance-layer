@@ -16,6 +16,8 @@ The design follows the project brief: condition monitoring for motor vibration, 
 - Maintenance action matrix with priority, inspection steps, spares, downtime class, and verification checks.
 - Documentation pack: FMEA, fault tree, alarm rationalization, validation plan, FAT protocol, commissioning checklist, BOM, and OT/IT integration notes.
 - Reproducible demo pipeline and built-in unit tests.
+- Paced telemetry replay with batched JSONL, retrying InfluxDB, and optional MQTT delivery.
+- Provisioned InfluxDB, Grafana, and Mosquitto edge stack with health checks and a schema-aligned live dashboard.
 
 ## Quick Start
 
@@ -66,7 +68,11 @@ python -m rpm_layer.cli features --input data/simulated/mixed_faults.csv --out o
 python -m rpm_layer.cli baseline --features output/features.csv --out output/baseline.json
 python -m rpm_layer.cli analyze --features output/features.csv --baseline output/baseline.json --out-dir output/demo
 python -m rpm_layer.cli report --out-dir output/demo --report reports/maintenance_case_report.md --dashboard dashboard/index.html
+python -m rpm_layer.cli replay --input data/simulated/mixed_faults.csv --max-records 100
+python -m rpm_layer.cli influx-write --input output/demo/condition_windows.lp --influx-token YOUR_TOKEN
 ```
+
+For the live historian and broker workflow, follow the [observability stack runbook](docs/observability_stack.md).
 
 ## Repository Map
 
@@ -101,6 +107,7 @@ The generated evidence pack is designed for engineering review:
 - [Field validation protocol](docs/field_validation_protocol.md)
 - [Interview walkthrough](docs/interview_walkthrough.md)
 - [Known limitations](docs/known_limitations.md)
+- [Observability stack runbook](docs/observability_stack.md)
 - [Architecture decision records](docs/adr/0001-classical-features-before-ml.md)
 
 ## Engineering Positioning

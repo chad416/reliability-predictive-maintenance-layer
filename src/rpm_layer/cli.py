@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 from pathlib import Path
 
 import pandas as pd
@@ -16,6 +17,14 @@ from rpm_layer.quality import write_quality_report
 from rpm_layer.recommender import build_recommendations, write_recommendations
 from rpm_layer.reporting import write_markdown_report
 from rpm_layer.simulator import generate_telemetry, write_telemetry
+from rpm_layer.streaming import (
+    FanoutSink,
+    InfluxTelemetrySink,
+    InfluxWriter,
+    JsonlSink,
+    MqttTelemetrySink,
+    replay_telemetry,
+)
 from rpm_layer.validation import validation_metrics, validation_summary, write_validation_artifacts
 
 
@@ -134,6 +143,51 @@ def cmd_demo(args: argparse.Namespace) -> None:
     print(f"Dashboard: {args.dashboard}")
 
 
+def cmd_replay(args: argparse.Namespace) -> None:
+    telemetry = read_telemetry(args.input)
+    selected_sinks = args.sink or ["jsonl"]
+    token = args.influx_token or os.environ.get("INFLUXDB_TOKEN", "")
+    if "influx" in selected_sinks and not token:
+        raise ValueError("InfluxDB token is required via --influx-token or INFLUXDB_TOKEN.")
+    sinks = []
+    try:
+        if "jsonl" in selected_sinks:
+            sinks.append(JsonlSink(args.jsonl_out))
+        if "influx" in selected_sinks:
+            writer = InfluxWriter(args.influx_url, args.influx_org, args.influx_bucket, token)
+            sinks.append(InfluxTelemetrySink(writer))
+        if "mqtt" in selected_sinks:
+            sinks.append(MqttTelemetrySink(args.mqtt_host, args.mqtt_port, args.mqtt_topic_prefix, args.mqtt_qos))
+    except Exception:
+        for sink in reversed(sinks):
+            sink.close()
+        raise
+    stats = replay_telemetry(
+        telemetry,
+        FanoutSink(sinks),
+        speed=args.speed,
+        batch_size=args.batch_size,
+        max_records=args.max_records,
+    )
+    print(
+        f"Replayed {stats.records_sent} records in {stats.batches_sent} batches "
+        f"({stats.source_duration_s:.3f}s source, {stats.elapsed_s:.3f}s elapsed)"
+    )
+
+
+def cmd_influx_write(args: argparse.Namespace) -> None:
+    token = args.influx_token or os.environ.get("INFLUXDB_TOKEN", "")
+    if not token:
+        raise ValueError("InfluxDB token is required via --influx-token or INFLUXDB_TOKEN.")
+    if args.batch_size < 1:
+        raise ValueError("batch-size must be at least 1")
+    writer = InfluxWriter(args.influx_url, args.influx_org, args.influx_bucket, token)
+    lines = Path(args.input).read_text(encoding="utf-8").splitlines()
+    for start in range(0, len(lines), args.batch_size):
+        writer.write_lines(lines[start : start + args.batch_size])
+    print(f"Wrote {len(lines)} line-protocol records to InfluxDB bucket '{args.influx_bucket}'")
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Industrial reliability and predictive-maintenance layer")
     parser.set_defaults(func=None)
@@ -184,6 +238,32 @@ def build_parser() -> argparse.ArgumentParser:
     demo.add_argument("--report", default=PROJECT_ROOT / "reports" / "maintenance_case_report.md")
     demo.add_argument("--dashboard", default=PROJECT_ROOT / "dashboard" / "index.html")
     demo.set_defaults(func=cmd_demo)
+
+    replay = sub.add_parser("replay", help="Replay sample telemetry to JSONL, InfluxDB, or MQTT sinks")
+    replay.add_argument("--input", default=PROJECT_ROOT / "data" / "simulated" / "mixed_faults.csv")
+    replay.add_argument("--sink", action="append", choices=("jsonl", "influx", "mqtt"), default=[])
+    replay.add_argument("--jsonl-out", default=PROJECT_ROOT / "output" / "replay" / "telemetry.jsonl")
+    replay.add_argument("--speed", type=float, default=0.0, help="Replay multiplier; zero sends without waiting")
+    replay.add_argument("--batch-size", type=int, default=25)
+    replay.add_argument("--max-records", type=int, default=None)
+    replay.add_argument("--influx-url", default="http://localhost:8086")
+    replay.add_argument("--influx-org", default="portfolio")
+    replay.add_argument("--influx-bucket", default="maintenance")
+    replay.add_argument("--influx-token", default=None)
+    replay.add_argument("--mqtt-host", default="localhost")
+    replay.add_argument("--mqtt-port", type=int, default=1883)
+    replay.add_argument("--mqtt-topic-prefix", default="factory/mhc")
+    replay.add_argument("--mqtt-qos", type=int, choices=(0, 1, 2), default=1)
+    replay.set_defaults(func=cmd_replay)
+
+    influx_write = sub.add_parser("influx-write", help="Upload generated line protocol to InfluxDB")
+    influx_write.add_argument("--input", default=PROJECT_ROOT / "output" / "demo" / "condition_windows.lp")
+    influx_write.add_argument("--influx-url", default="http://localhost:8086")
+    influx_write.add_argument("--influx-org", default="portfolio")
+    influx_write.add_argument("--influx-bucket", default="maintenance")
+    influx_write.add_argument("--influx-token", default=None)
+    influx_write.add_argument("--batch-size", type=int, default=500)
+    influx_write.set_defaults(func=cmd_influx_write)
     return parser
 
 

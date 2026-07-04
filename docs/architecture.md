@@ -8,13 +8,16 @@ The reliability layer sits above the industrial control layer. It does not own m
 
 ```mermaid
 flowchart LR
-  Sensors["Vibration, current, temperature, speed, load"] --> Acquisition["Acquisition adapter: CSV now, OPC UA/MQTT later"]
+  Sensors["Vibration, current, temperature, speed, load"] --> Acquisition["Acquisition and paced replay adapter"]
   Acquisition --> Feature["Rolling feature extraction"]
   Feature --> Baseline["Robust healthy baseline"]
   Baseline --> Diagnostics["Explainable diagnostic rules"]
   Diagnostics --> Alerts["Alarm and event records"]
   Alerts --> Maint["Maintenance recommendation matrix"]
   Alerts --> Dashboard["Dashboard and case report"]
+  Acquisition --> MQTT["MQTT edge broker"]
+  Acquisition --> Historian["InfluxDB historian"]
+  Historian --> Grafana["Provisioned Grafana dashboard"]
 ```
 
 ## Package Boundaries
@@ -25,14 +28,14 @@ flowchart LR
 - `detector.py` maps evidence to explainable diagnostic scores and alert severities.
 - `recommender.py` converts alert episodes into maintenance actions, spares, downtime class, and verification criteria.
 - `reporting.py` and `dashboard.py` create the public engineering evidence.
+- `streaming.py` replays acquisition samples with bounded batching and publishes to JSONL, InfluxDB, or MQTT sinks.
 
 ## Integration Boundary
 
-The current data contract is CSV because it is easy to validate and version. In the full automation portfolio, an acquisition adapter should subscribe to:
+CSV remains the deterministic acquisition boundary because it is easy to validate and version. The replay adapter can now deliver that contract to InfluxDB and MQTT; a field adapter should subscribe to:
 
 - OPC UA nodes from PLC, drive, or SCADA.
 - MQTT topics from an edge gateway.
 - Local DAQ samples for accelerometer and current sensor data.
 
 The downstream pipeline should not change when the acquisition adapter changes, as long as it emits the `data/README.md` schema.
-

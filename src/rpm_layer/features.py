@@ -56,7 +56,7 @@ def extract_features(
         return pd.DataFrame()
 
     df = telemetry.copy()
-    df["timestamp"] = pd.to_datetime(df["timestamp"])
+    df["timestamp"] = pd.to_datetime(df["timestamp"], format="mixed")
     df = df.sort_values("timestamp").reset_index(drop=True)
     start = df["timestamp"].iloc[0]
     elapsed_s = (df["timestamp"] - start).dt.total_seconds().to_numpy()
@@ -122,4 +122,3 @@ def write_features(features: pd.DataFrame, path: str | Path) -> None:
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
     features.to_csv(target, index=False)
-

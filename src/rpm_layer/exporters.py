@@ -19,7 +19,7 @@ def write_influx_line_protocol(scored: pd.DataFrame, path: str | Path) -> None:
     target.parent.mkdir(parents=True, exist_ok=True)
     lines = []
     for _, row in scored.iterrows():
-        timestamp_ns = int(pd.Timestamp(row["window_start"]).timestamp() * 1_000_000_000)
+        timestamp_ns = int(pd.Timestamp(row["window_start"]).value)
         tags = (
             f"asset_id={_safe_tag(row.get('asset_id', 'unknown'))},"
             f"diagnosis={_safe_tag(row.get('predicted_diagnosis', 'unknown'))},"

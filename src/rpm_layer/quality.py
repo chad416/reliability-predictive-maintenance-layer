@@ -40,7 +40,7 @@ def assess_telemetry_quality(telemetry: pd.DataFrame, expected_sampling_hz: floa
 
     df = telemetry.copy()
     metrics["null_counts"] = {column: int(df[column].isna().sum()) for column in REQUIRED_COLUMNS}
-    timestamps = pd.to_datetime(df["timestamp"], errors="coerce")
+    timestamps = pd.to_datetime(df["timestamp"], errors="coerce", format="mixed")
     if timestamps.isna().any():
         metrics["status"] = "fail"
         metrics["timestamp_parse_failures"] = int(timestamps.isna().sum())
@@ -82,4 +82,3 @@ def write_quality_report(telemetry: pd.DataFrame, expected_sampling_hz: float, p
     metrics = assess_telemetry_quality(telemetry, expected_sampling_hz)
     write_json(path, metrics)
     return metrics
-

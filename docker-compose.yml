@@ -1,29 +1,87 @@
+name: rpm-observability
+
 services:
   influxdb:
-    image: influxdb:2
+    image: influxdb:2.7.11
+    restart: unless-stopped
     ports:
       - "8086:8086"
     environment:
       DOCKER_INFLUXDB_INIT_MODE: setup
-      DOCKER_INFLUXDB_INIT_USERNAME: maintenance
-      DOCKER_INFLUXDB_INIT_PASSWORD: maintenance-demo-password
-      DOCKER_INFLUXDB_INIT_ORG: portfolio
-      DOCKER_INFLUXDB_INIT_BUCKET: maintenance
-      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: portfolio-maintenance-token
+      DOCKER_INFLUXDB_INIT_USERNAME: ${INFLUXDB_USERNAME:-maintenance}
+      DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUXDB_PASSWORD:-maintenance-demo-password}
+      DOCKER_INFLUXDB_INIT_ORG: ${INFLUXDB_ORG:-portfolio}
+      DOCKER_INFLUXDB_INIT_BUCKET: ${INFLUXDB_BUCKET:-maintenance}
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB_TOKEN:-portfolio-maintenance-token}
+    healthcheck:
+      test: ["CMD", "influx", "ping", "--host", "http://localhost:8086"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
     volumes:
       - influxdb-data:/var/lib/influxdb2
 
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:11.5.2
+    restart: unless-stopped
     ports:
       - "3000:3000"
     environment:
-      GF_SECURITY_ADMIN_USER: admin
-      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      INFLUXDB_ORG: ${INFLUXDB_ORG:-portfolio}
+      INFLUXDB_BUCKET: ${INFLUXDB_BUCKET:-maintenance}
+      INFLUXDB_TOKEN: ${INFLUXDB_TOKEN:-portfolio-maintenance-token}
+    depends_on:
+      influxdb:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:3000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
     volumes:
       - grafana-data:/var/lib/grafana
-      - ./grafana:/var/lib/grafana/dashboards
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/predictive_maintenance_dashboard.json:/var/lib/grafana/dashboards/predictive_maintenance_dashboard.json:ro
+
+  mqtt:
+    image: eclipse-mosquitto:2.0.20
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+    healthcheck:
+      test: ["CMD-SHELL", "mosquitto_sub -h localhost -t '$$SYS/broker/version' -C 1 -W 3 >/dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    volumes:
+      - ./deploy/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - mosquitto-data:/mosquitto/data
+
+  seed:
+    image: curlimages/curl:8.12.1
+    profiles: ["seed"]
+    depends_on:
+      influxdb:
+        condition: service_healthy
+    command:
+      - --fail
+      - --show-error
+      - --request
+      - POST
+      - --header
+      - "Authorization: Token ${INFLUXDB_TOKEN:-portfolio-maintenance-token}"
+      - --header
+      - "Content-Type: text/plain; charset=utf-8"
+      - --data-binary
+      - "@/evidence/condition_windows.lp"
+      - "http://influxdb:8086/api/v2/write?org=${INFLUXDB_ORG:-portfolio}&bucket=${INFLUXDB_BUCKET:-maintenance}&precision=ns"
+    volumes:
+      - ./output/demo:/evidence:ro
 
 volumes:
   influxdb-data:
   grafana-data:
+  mosquitto-data:

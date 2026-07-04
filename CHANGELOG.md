@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.0 - Streaming and Observability
+
+- Added paced telemetry replay with batched JSONL, InfluxDB, and optional MQTT sinks.
+- Added retry/backoff and nanosecond-safe InfluxDB writes for raw telemetry and condition windows.
+- Provisioned a health-checked InfluxDB, Grafana, and Mosquitto stack with a dashboard matching the exported schema.
+- Expanded automated coverage for quality failures, line-protocol escaping, replay resource handling, retries, and CLI behavior.
+
 ## 0.4.0 - Portfolio Hardening
 
 - Added telemetry quality gate with timestamp, gap, null, duplicate, and physical range checks.
@@ -10,4 +17,3 @@
 ## 0.1.0 - Initial Project
 
 - Built deterministic telemetry simulation, feature extraction, robust baseline scoring, explainable diagnostics, recommendation generation, dashboard, report, documentation pack, tests, CI, and GitHub Pages deployment.
-

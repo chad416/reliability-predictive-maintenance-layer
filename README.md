@@ -1,5 +1,8 @@
 # Reliability and Predictive Maintenance Layer
 
+[![CI](https://github.com/chad416/reliability-predictive-maintenance-layer/actions/workflows/ci.yml/badge.svg)](https://github.com/chad416/reliability-predictive-maintenance-layer/actions/workflows/ci.yml)
+[![Pages](https://github.com/chad416/reliability-predictive-maintenance-layer/actions/workflows/pages.yml/badge.svg)](https://github.com/chad416/reliability-predictive-maintenance-layer/actions/workflows/pages.yml)
+
 This repository is a portfolio-grade reliability engineering and predictive-maintenance layer for an industrial motion bench or material-handling micro-cell. It is intentionally more than a notebook: it includes telemetry simulation, signal feature extraction, explainable fault detection, maintenance recommendations, FMEA/FTA documentation, validation evidence, and a self-contained dashboard.
 
 The design follows the project brief: condition monitoring for motor vibration, current, and temperature; alarm thresholds tied to measured evidence; rooted fault narratives; and maintenance actions that are useful to RAM/LCC, commissioning, quality, and connected-services teams.
@@ -36,6 +39,15 @@ The demo creates:
 
 Open `dashboard/index.html` in a browser for the self-contained portfolio dashboard.
 
+## GitHub Portfolio View
+
+The repository includes GitHub Actions workflows for continuous validation and dashboard publishing:
+
+- CI runs compile checks, unit tests, the full demo pipeline, and dashboard payload validation.
+- The Pages workflow publishes the generated dashboard and selected evidence artifacts.
+- After GitHub Pages is enabled for this repository, the portfolio dashboard is expected at:
+  `https://chad416.github.io/reliability-predictive-maintenance-layer/`
+
 ## CLI Usage
 
 ```powershell
@@ -66,4 +78,3 @@ tests/                  Unit tests using the standard library test runner
 This project is meant to sit above the motion bench or material-handling cell in the wider automation portfolio. In a real deployment, acquisition would come from accelerometers, current sensing, temperature sensing, and PLC/drive telemetry over OPC UA or MQTT. This implementation includes an industrially realistic simulator so the analytics and documentation can be reviewed before hardware is connected.
 
 The core rule is honesty: the system demonstrates reliability engineering intent, diagnostic reasoning, and validation discipline. It does not claim certified SIL/PL safety or production predictive accuracy without a certified safety chain and field validation campaign.
-

@@ -1,0 +1,67 @@
+name: Publish Portfolio Dashboard
+
+on:
+  push:
+    branches: ["master"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build static portfolio site
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install package
+        run: python -m pip install -e .
+
+      - name: Generate latest demo evidence
+        run: python scripts/run_demo.py
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Assemble Pages artifact
+        run: |
+          mkdir -p public/evidence public/docs
+          cp dashboard/index.html public/index.html
+          cp reports/maintenance_case_report.md public/evidence/maintenance_case_report.md
+          cp output/demo/alert_episodes.csv public/evidence/alert_episodes.csv
+          cp output/demo/recommendations.csv public/evidence/recommendations.csv
+          cp docs/fmea.md public/docs/fmea.md
+          cp docs/fat_protocol.md public/docs/fat_protocol.md
+          cp docs/validation_plan.md public/docs/validation_plan.md
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

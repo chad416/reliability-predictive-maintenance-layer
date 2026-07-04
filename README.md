@@ -18,6 +18,7 @@ The design follows the project brief: condition monitoring for motor vibration, 
 - Reproducible demo pipeline and built-in unit tests.
 - Paced telemetry replay with batched JSONL, retrying InfluxDB, and optional MQTT delivery.
 - Durable SQLite store-and-forward for ordered recovery after historian or broker outages.
+- Stateful online condition windowing that remains equivalent to the commissioned batch analytics.
 - Provisioned InfluxDB, Grafana, and Mosquitto edge stack with health checks and a schema-aligned live dashboard.
 
 ## Quick Start
@@ -30,7 +31,7 @@ python scripts/run_demo.py
 python -m unittest discover -s tests
 ```
 
-The demo creates:
+The demo and online-monitor commands create:
 
 - `data/simulated/mixed_faults.csv`
 - `output/demo/features.csv`
@@ -45,6 +46,9 @@ The demo creates:
 - `output/demo/condition_windows.lp`
 - `output/demo/mqtt_outbox.jsonl`
 - `output/demo/opcua_snapshot.json`
+- `output/live/live_monitor_summary.json`
+- `output/live/live_condition_windows.csv`
+- `output/live/live_alerts.csv`
 - `reports/maintenance_case_report.md`
 - `dashboard/index.html`
 
@@ -72,6 +76,7 @@ python -m rpm_layer.cli report --out-dir output/demo --report reports/maintenanc
 python -m rpm_layer.cli replay --input data/simulated/mixed_faults.csv --max-records 100
 python -m rpm_layer.cli influx-write --input output/demo/condition_windows.lp --influx-token YOUR_TOKEN
 python -m rpm_layer.cli spool-drain --sink influx --influx-token YOUR_TOKEN
+python -m rpm_layer.cli monitor --input data/simulated/mixed_faults.csv --baseline output/demo/baseline.json
 ```
 
 For the live historian and broker workflow, follow the [observability stack runbook](docs/observability_stack.md).

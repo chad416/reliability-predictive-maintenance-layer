@@ -33,6 +33,7 @@ flowchart LR
 - `reporting.py` and `dashboard.py` create the public engineering evidence.
 - `streaming.py` replays acquisition samples with bounded batching and publishes to JSONL, InfluxDB, or MQTT sinks.
 - `spool.py` commits outbound remote batches to a local SQLite WAL queue and drains them in FIFO order after recovery.
+- `monitor.py` maintains event-time windows across uneven acquisition chunks and applies the commissioned baseline and diagnostic rules as each window closes.
 
 ## Integration Boundary
 

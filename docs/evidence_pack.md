@@ -18,5 +18,8 @@ The project generates a complete review pack with `python scripts/run_demo.py`.
 | `output/demo/mqtt_outbox.jsonl` | MQTT-style condition, alert, and recommendation messages |
 | `output/demo/opcua_snapshot.json` | OPC UA-facing node snapshot for supervisory integration |
 | `output/demo/telemetry_replay.jsonl` | CI smoke evidence from the paced acquisition replay path |
+| `output/live/live_monitor_summary.json` | Stateful chunk-processing counts and incomplete-buffer evidence |
+| `output/live/live_alerts.csv` | Alerts emitted as event-time windows close |
+| `output/live/live_condition_windows.lp` | Online condition windows ready for historian ingestion |
 
 The raw telemetry file is intentionally ignored because it is reproducible and large. Reviewers should regenerate it instead of versioning it.

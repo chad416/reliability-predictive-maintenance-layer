@@ -14,6 +14,7 @@
 | Demonstrate OT/IT integration contracts | `output/demo/mqtt_outbox.jsonl`, `output/demo/opcua_snapshot.json`, `output/demo/condition_windows.lp` | `src/rpm_layer/exporters.py` |
 | Replay timestamped telemetry to edge services | `output/demo/telemetry_replay.jsonl`, replay smoke test | `src/rpm_layer/streaming.py`, `src/rpm_layer/cli.py` |
 | Prevent telemetry loss during service outages | Durable SQLite outbox and recovery tests | `src/rpm_layer/spool.py`, `tests/test_streaming.py` |
+| Analyze condition windows as telemetry arrives | Live monitor summary and batch-equivalence tests | `src/rpm_layer/monitor.py`, `tests/test_monitor.py` |
 | Deploy historian, broker, and live dashboard | Provisioned Docker Compose stack and Grafana dashboard | `docker-compose.yml`, `grafana/provisioning/`, `deploy/mosquitto.conf` |
 | Provide RAM/FMEA-style engineering documentation | `docs/fmea.md`, `docs/fault_tree.md`, `docs/maintenance_strategy.md` | Documentation pack |
 | Provide CI-verifiable reproducibility | GitHub Actions CI run | `.github/workflows/ci.yml` |

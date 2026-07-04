@@ -34,6 +34,9 @@ jobs:
       - name: Generate latest demo evidence
         run: python scripts/run_demo.py
 
+      - name: Generate online-monitor evidence
+        run: python -m rpm_layer.cli monitor --chunk-size 997 --out-dir output/live
+
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v6
 
@@ -52,6 +55,9 @@ jobs:
           cp output/demo/condition_windows.lp public/evidence/condition_windows.lp
           cp output/demo/mqtt_outbox.jsonl public/evidence/mqtt_outbox.jsonl
           cp output/demo/opcua_snapshot.json public/evidence/opcua_snapshot.json
+          cp output/live/live_monitor_summary.json public/evidence/live_monitor_summary.json
+          cp output/live/live_alerts.csv public/evidence/live_alerts.csv
+          cp output/live/live_condition_windows.lp public/evidence/live_condition_windows.lp
           cp docs/fmea.md public/docs/fmea.md
           cp docs/fat_protocol.md public/docs/fat_protocol.md
           cp docs/validation_plan.md public/docs/validation_plan.md

@@ -38,6 +38,9 @@ jobs:
       - name: Smoke-test telemetry replay
         run: python -m rpm_layer.cli replay --input data/simulated/mixed_faults.csv --jsonl-out output/demo/telemetry_replay.jsonl --max-records 100
 
+      - name: Validate chunked online monitoring
+        run: python -m rpm_layer.cli monitor --chunk-size 997 --out-dir output/live
+
       - name: Validate generated dashboard payload
         run: |
           python - <<'PY'
@@ -72,3 +75,4 @@ jobs:
             output/demo/*.json
             output/demo/*.lp
             output/demo/*.jsonl
+            output/live/*

@@ -49,6 +49,14 @@ python -m rpm_layer.cli replay --sink mqtt --mqtt-host localhost --speed 20
 
 Use `--speed 1` for wall-clock replay and `--speed 0` for an unpaced commissioning smoke test. `--max-records` limits a test without modifying source data.
 
+Run the stateful analytical path over uneven acquisition chunks with:
+
+```powershell
+python -m rpm_layer.cli monitor --chunk-size 997
+```
+
+This writes scored live windows, live alerts, InfluxDB line protocol, and `live_monitor_summary.json` under `output/live/`. The monitor rejects duplicate or out-of-order chunk boundaries and will not allow a step size larger than the analysis window.
+
 ## Acceptance Checks
 
 - `docker compose ps` reports all three long-running services healthy.

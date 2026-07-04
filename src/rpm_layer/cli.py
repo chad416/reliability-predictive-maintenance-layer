@@ -7,12 +7,13 @@ from pathlib import Path
 import pandas as pd
 
 from rpm_layer.baseline import fit_baseline, load_baseline, save_baseline, score_features
-from rpm_layer.config import PROJECT_ROOT, load_asset_profile, load_json
+from rpm_layer.config import PROJECT_ROOT, load_asset_profile, load_json, write_json
 from rpm_layer.dashboard import write_dashboard
 from rpm_layer.detector import aggregate_alerts, attach_predictions, detect_alerts, write_alerts
 from rpm_layer.exporters import write_influx_line_protocol, write_mqtt_outbox, write_opcua_snapshot, write_work_orders
 from rpm_layer.features import extract_features, read_telemetry, write_features
 from rpm_layer.models import AssetProfile
+from rpm_layer.monitor import monitor_telemetry
 from rpm_layer.quality import write_quality_report
 from rpm_layer.recommender import build_recommendations, write_recommendations
 from rpm_layer.reporting import write_markdown_report
@@ -220,6 +221,39 @@ def cmd_spool_drain(args: argparse.Namespace) -> None:
     print(f"Drained {delivered} telemetry records; {remaining} batches remain")
 
 
+def cmd_monitor(args: argparse.Namespace) -> None:
+    profile = _profile(args.profile)
+    telemetry = read_telemetry(args.input)
+    baseline = load_baseline(args.baseline)
+    result = monitor_telemetry(
+        telemetry,
+        baseline,
+        sampling_hz=args.sampling_hz or profile.sampling_hz,
+        chunk_size=args.chunk_size,
+        window_s=args.window_sec,
+        step_s=args.step_sec,
+    )
+    out_dir = Path(args.out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    write_features(result.condition_windows, out_dir / "live_condition_windows.csv")
+    write_alerts(result.alerts, out_dir / "live_alerts.csv")
+    write_influx_line_protocol(result.condition_windows, out_dir / "live_condition_windows.lp")
+    summary = {
+        "samples_ingested": result.samples_ingested,
+        "condition_windows": len(result.condition_windows),
+        "alert_windows": len(result.alerts),
+        "incomplete_samples": result.incomplete_samples,
+        "chunk_size": args.chunk_size,
+        "window_seconds": args.window_sec,
+        "step_seconds": args.step_sec,
+    }
+    write_json(out_dir / "live_monitor_summary.json", summary)
+    print(
+        f"Monitored {result.samples_ingested} samples into {len(result.condition_windows)} condition windows "
+        f"and {len(result.alerts)} alerts"
+    )
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Industrial reliability and predictive-maintenance layer")
     parser.set_defaults(func=None)
@@ -314,6 +348,17 @@ def build_parser() -> argparse.ArgumentParser:
     spool_drain.add_argument("--mqtt-topic-prefix", default="factory/mhc")
     spool_drain.add_argument("--mqtt-qos", type=int, choices=(0, 1, 2), default=1)
     spool_drain.set_defaults(func=cmd_spool_drain)
+
+    monitor = sub.add_parser("monitor", help="Process ordered telemetry chunks through the live condition pipeline")
+    monitor.add_argument("--profile", default=default_profile)
+    monitor.add_argument("--input", default=PROJECT_ROOT / "data" / "simulated" / "mixed_faults.csv")
+    monitor.add_argument("--baseline", default=PROJECT_ROOT / "output" / "demo" / "baseline.json")
+    monitor.add_argument("--out-dir", default=PROJECT_ROOT / "output" / "live")
+    monitor.add_argument("--sampling-hz", type=float, default=None)
+    monitor.add_argument("--chunk-size", type=int, default=997)
+    monitor.add_argument("--window-sec", type=float, default=5.0)
+    monitor.add_argument("--step-sec", type=float, default=5.0)
+    monitor.set_defaults(func=cmd_monitor)
     return parser
 
 

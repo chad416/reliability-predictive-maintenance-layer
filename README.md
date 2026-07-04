@@ -94,6 +94,15 @@ The generated evidence pack is designed for engineering review:
 - `output/demo/opcua_snapshot.json` shows the OPC UA-facing condition and maintenance node model.
 - `docs/traceability_matrix.md` links project requirements to implementation and evidence artifacts.
 
+## Engineering Notes For Reviewers
+
+- [Traceability matrix](docs/traceability_matrix.md)
+- [Evidence pack](docs/evidence_pack.md)
+- [Field validation protocol](docs/field_validation_protocol.md)
+- [Interview walkthrough](docs/interview_walkthrough.md)
+- [Known limitations](docs/known_limitations.md)
+- [Architecture decision records](docs/adr/0001-classical-features-before-ml.md)
+
 ## Engineering Positioning
 
 This project is meant to sit above the motion bench or material-handling cell in the wider automation portfolio. In a real deployment, acquisition would come from accelerometers, current sensing, temperature sensing, and PLC/drive telemetry over OPC UA or MQTT. This implementation includes an industrially realistic simulator so the analytics and documentation can be reviewed before hardware is connected.

@@ -39,7 +39,7 @@ jobs:
 
       - name: Assemble Pages artifact
         run: |
-          mkdir -p public/evidence public/docs
+          mkdir -p public/evidence public/docs/adr
           cp dashboard/index.html public/index.html
           cp reports/maintenance_case_report.md public/evidence/maintenance_case_report.md
           cp output/demo/alert_episodes.csv public/evidence/alert_episodes.csv
@@ -57,6 +57,10 @@ jobs:
           cp docs/validation_plan.md public/docs/validation_plan.md
           cp docs/traceability_matrix.md public/docs/traceability_matrix.md
           cp docs/evidence_pack.md public/docs/evidence_pack.md
+          cp docs/field_validation_protocol.md public/docs/field_validation_protocol.md
+          cp docs/interview_walkthrough.md public/docs/interview_walkthrough.md
+          cp docs/known_limitations.md public/docs/known_limitations.md
+          cp docs/adr/*.md public/docs/adr/
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

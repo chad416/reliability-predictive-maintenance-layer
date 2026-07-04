@@ -1,0 +1,185 @@
+from __future__ import annotations
+
+import argparse
+from pathlib import Path
+
+import pandas as pd
+
+from rpm_layer.baseline import fit_baseline, load_baseline, save_baseline, score_features
+from rpm_layer.config import PROJECT_ROOT, load_asset_profile
+from rpm_layer.dashboard import write_dashboard
+from rpm_layer.detector import aggregate_alerts, attach_predictions, detect_alerts, write_alerts
+from rpm_layer.features import extract_features, read_telemetry, write_features
+from rpm_layer.models import AssetProfile
+from rpm_layer.recommender import build_recommendations, write_recommendations
+from rpm_layer.reporting import write_markdown_report
+from rpm_layer.simulator import generate_telemetry, write_telemetry
+
+
+def _profile(path: str | Path) -> AssetProfile:
+    return AssetProfile.from_mapping(load_asset_profile(path))
+
+
+def cmd_simulate(args: argparse.Namespace) -> None:
+    profile = _profile(args.profile)
+    telemetry = generate_telemetry(
+        profile=profile,
+        duration_s=args.duration_sec,
+        sampling_hz=args.sampling_hz or profile.sampling_hz,
+        seed=args.seed,
+    )
+    write_telemetry(telemetry, args.out)
+    print(f"Wrote telemetry: {args.out} ({len(telemetry)} samples)")
+
+
+def cmd_features(args: argparse.Namespace) -> None:
+    profile = _profile(args.profile)
+    telemetry = read_telemetry(args.input)
+    features = extract_features(
+        telemetry,
+        sampling_hz=args.sampling_hz or profile.sampling_hz,
+        window_s=args.window_sec,
+        step_s=args.step_sec,
+    )
+    write_features(features, args.out)
+    print(f"Wrote features: {args.out} ({len(features)} windows)")
+
+
+def cmd_baseline(args: argparse.Namespace) -> None:
+    features = pd.read_csv(args.features)
+    baseline = fit_baseline(features)
+    save_baseline(baseline, args.out)
+    print(f"Wrote baseline: {args.out} ({baseline['healthy_window_count']} healthy windows)")
+
+
+def cmd_analyze(args: argparse.Namespace) -> None:
+    out_dir = Path(args.out_dir)
+    features = pd.read_csv(args.features)
+    baseline = load_baseline(args.baseline)
+    scored = score_features(features, baseline)
+    alerts = detect_alerts(scored)
+    scored = attach_predictions(scored, alerts)
+    aggregated = aggregate_alerts(alerts)
+    recommendations = build_recommendations(aggregated)
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    write_features(scored, out_dir / "scored_features.csv")
+    write_alerts(alerts, out_dir / "alerts.csv")
+    write_alerts(aggregated, out_dir / "alert_episodes.csv")
+    write_recommendations(recommendations, out_dir / "recommendations.csv")
+    print(f"Wrote analysis artifacts under: {out_dir}")
+
+
+def cmd_report(args: argparse.Namespace) -> None:
+    out_dir = Path(args.out_dir)
+    scored = pd.read_csv(out_dir / "scored_features.csv")
+    alerts = pd.read_csv(out_dir / "alerts.csv") if (out_dir / "alerts.csv").exists() else pd.DataFrame()
+    aggregated = pd.read_csv(out_dir / "alert_episodes.csv") if (out_dir / "alert_episodes.csv").exists() else pd.DataFrame()
+    recommendations = pd.read_csv(out_dir / "recommendations.csv")
+    write_markdown_report(scored, alerts, aggregated, recommendations, args.report)
+    write_dashboard(scored, alerts, recommendations, args.dashboard)
+    print(f"Wrote report: {args.report}")
+    print(f"Wrote dashboard: {args.dashboard}")
+
+
+def cmd_demo(args: argparse.Namespace) -> None:
+    profile_path = Path(args.profile)
+    out_dir = Path(args.out_dir)
+    telemetry_path = Path(args.telemetry)
+    feature_path = out_dir / "features.csv"
+    baseline_path = out_dir / "baseline.json"
+
+    profile = _profile(profile_path)
+    telemetry = generate_telemetry(profile=profile, duration_s=args.duration_sec, sampling_hz=profile.sampling_hz, seed=args.seed)
+    write_telemetry(telemetry, telemetry_path)
+    features = extract_features(telemetry, sampling_hz=profile.sampling_hz)
+    write_features(features, feature_path)
+    baseline = fit_baseline(features)
+    save_baseline(baseline, baseline_path)
+    scored = score_features(features, baseline)
+    alerts = detect_alerts(scored)
+    scored = attach_predictions(scored, alerts)
+    aggregated = aggregate_alerts(alerts)
+    recommendations = build_recommendations(aggregated)
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    write_features(scored, out_dir / "scored_features.csv")
+    write_alerts(alerts, out_dir / "alerts.csv")
+    write_alerts(aggregated, out_dir / "alert_episodes.csv")
+    write_recommendations(recommendations, out_dir / "recommendations.csv")
+    write_markdown_report(scored, alerts, aggregated, recommendations, args.report)
+    write_dashboard(scored, alerts, recommendations, args.dashboard)
+
+    print(f"Telemetry: {telemetry_path}")
+    print(f"Features: {feature_path}")
+    print(f"Alerts: {out_dir / 'alerts.csv'}")
+    print(f"Report: {args.report}")
+    print(f"Dashboard: {args.dashboard}")
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Industrial reliability and predictive-maintenance layer")
+    parser.set_defaults(func=None)
+    default_profile = PROJECT_ROOT / "config" / "asset_profile.json"
+
+    sub = parser.add_subparsers(dest="command")
+
+    simulate = sub.add_parser("simulate", help="Generate deterministic telemetry with seeded faults")
+    simulate.add_argument("--profile", default=default_profile)
+    simulate.add_argument("--duration-sec", type=float, default=1200.0)
+    simulate.add_argument("--sampling-hz", type=float, default=None)
+    simulate.add_argument("--seed", type=int, default=7)
+    simulate.add_argument("--out", default=PROJECT_ROOT / "data" / "simulated" / "mixed_faults.csv")
+    simulate.set_defaults(func=cmd_simulate)
+
+    features = sub.add_parser("features", help="Extract rolling diagnostic features")
+    features.add_argument("--profile", default=default_profile)
+    features.add_argument("--input", required=True)
+    features.add_argument("--out", required=True)
+    features.add_argument("--sampling-hz", type=float, default=None)
+    features.add_argument("--window-sec", type=float, default=5.0)
+    features.add_argument("--step-sec", type=float, default=5.0)
+    features.set_defaults(func=cmd_features)
+
+    baseline = sub.add_parser("baseline", help="Fit robust healthy baseline")
+    baseline.add_argument("--features", required=True)
+    baseline.add_argument("--out", required=True)
+    baseline.set_defaults(func=cmd_baseline)
+
+    analyze = sub.add_parser("analyze", help="Score features, detect alerts, and write recommendations")
+    analyze.add_argument("--features", required=True)
+    analyze.add_argument("--baseline", required=True)
+    analyze.add_argument("--out-dir", default=PROJECT_ROOT / "output" / "demo")
+    analyze.set_defaults(func=cmd_analyze)
+
+    report = sub.add_parser("report", help="Write Markdown report and static dashboard")
+    report.add_argument("--out-dir", default=PROJECT_ROOT / "output" / "demo")
+    report.add_argument("--report", default=PROJECT_ROOT / "reports" / "maintenance_case_report.md")
+    report.add_argument("--dashboard", default=PROJECT_ROOT / "dashboard" / "index.html")
+    report.set_defaults(func=cmd_report)
+
+    demo = sub.add_parser("demo", help="Run the complete demonstration pipeline")
+    demo.add_argument("--profile", default=default_profile)
+    demo.add_argument("--duration-sec", type=float, default=1200.0)
+    demo.add_argument("--seed", type=int, default=7)
+    demo.add_argument("--telemetry", default=PROJECT_ROOT / "data" / "simulated" / "mixed_faults.csv")
+    demo.add_argument("--out-dir", default=PROJECT_ROOT / "output" / "demo")
+    demo.add_argument("--report", default=PROJECT_ROOT / "reports" / "maintenance_case_report.md")
+    demo.add_argument("--dashboard", default=PROJECT_ROOT / "dashboard" / "index.html")
+    demo.set_defaults(func=cmd_demo)
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    if args.func is None:
+        parser.print_help()
+        return 2
+    args.func(args)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+

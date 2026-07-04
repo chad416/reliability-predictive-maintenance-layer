@@ -1,0 +1,44 @@
+{
+  "title": "Reliability and Predictive Maintenance Layer",
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "10s",
+  "tags": ["industrial", "predictive-maintenance", "portfolio"],
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Condition Index",
+      "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8},
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"maintenance\") |> range(start: -6h) |> filter(fn: (r) => r._measurement == \"condition\" and r._field == \"condition_index\")"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Vibration RMS and 1x FFT",
+      "gridPos": {"x": 12, "y": 0, "w": 12, "h": 8},
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"maintenance\") |> range(start: -6h) |> filter(fn: (r) => r._measurement == \"features\" and (r._field == \"vib_rms_g\" or r._field == \"vib_fft_1x_g\"))"
+        }
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Active Recommendations",
+      "gridPos": {"x": 0, "y": 8, "w": 24, "h": 8},
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"maintenance\") |> range(start: -24h) |> filter(fn: (r) => r._measurement == \"recommendations\")"
+        }
+      ]
+    }
+  ]
+}
+

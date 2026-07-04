@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+build/
+dist/
+*.egg-info/
+.env
+.DS_Store
+
+# Generated demo artifacts are reproducible through scripts/run_demo.py.
+output/demo/
+data/simulated/mixed_faults.csv

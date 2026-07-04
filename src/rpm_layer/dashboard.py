@@ -1,0 +1,185 @@
+from __future__ import annotations
+
+import html
+import json
+from pathlib import Path
+
+import pandas as pd
+
+
+def _records(df: pd.DataFrame) -> list[dict]:
+    return json.loads(df.to_json(orient="records"))
+
+
+def write_dashboard(
+    scored_features: pd.DataFrame,
+    alerts: pd.DataFrame,
+    recommendations: pd.DataFrame,
+    path: str | Path,
+) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "scored": _records(scored_features),
+        "alerts": _records(alerts),
+        "recommendations": _records(recommendations),
+    }
+    title = "Reliability and Predictive Maintenance Layer"
+    html_doc = f"""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{html.escape(title)}</title>
+  <style>
+    :root {{
+      color-scheme: light;
+      --ink: #18202a;
+      --muted: #5b6472;
+      --line: #d7dde6;
+      --panel: #f7f8fb;
+      --accent: #136f63;
+      --warn: #b7791f;
+      --crit: #b42318;
+      --ok: #287d3c;
+    }}
+    * {{ box-sizing: border-box; }}
+    body {{
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--ink);
+      background: #ffffff;
+    }}
+    header {{
+      padding: 28px 36px 18px;
+      border-bottom: 1px solid var(--line);
+      background: #f3f6f9;
+    }}
+    h1 {{ margin: 0 0 8px; font-size: 28px; letter-spacing: 0; }}
+    h2 {{ margin: 0 0 14px; font-size: 18px; letter-spacing: 0; }}
+    p {{ color: var(--muted); margin: 0; line-height: 1.45; }}
+    main {{ padding: 24px 36px 40px; display: grid; gap: 22px; }}
+    .kpis {{ display: grid; grid-template-columns: repeat(4, minmax(160px, 1fr)); gap: 12px; }}
+    .kpi {{ border: 1px solid var(--line); border-radius: 8px; padding: 14px; background: #fff; min-height: 92px; }}
+    .kpi span {{ display: block; color: var(--muted); font-size: 12px; text-transform: uppercase; }}
+    .kpi strong {{ display: block; font-size: 28px; margin-top: 8px; }}
+    section {{ border-top: 1px solid var(--line); padding-top: 20px; }}
+    .chart {{ width: 100%; min-height: 260px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); padding: 12px; }}
+    svg {{ width: 100%; height: 240px; display: block; }}
+    table {{ width: 100%; border-collapse: collapse; font-size: 14px; }}
+    th, td {{ text-align: left; border-bottom: 1px solid var(--line); padding: 10px 8px; vertical-align: top; }}
+    th {{ color: var(--muted); font-size: 12px; text-transform: uppercase; background: #f7f8fb; }}
+    .badge {{ display: inline-block; border-radius: 999px; padding: 3px 9px; color: #fff; font-size: 12px; }}
+    .critical {{ background: var(--crit); }}
+    .warning {{ background: var(--warn); }}
+    .advisory {{ background: var(--accent); }}
+    .normal {{ background: var(--ok); }}
+    @media (max-width: 820px) {{
+      header, main {{ padding-left: 18px; padding-right: 18px; }}
+      .kpis {{ grid-template-columns: repeat(2, minmax(130px, 1fr)); }}
+      table {{ font-size: 12px; }}
+    }}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>{html.escape(title)}</h1>
+    <p>Condition monitoring, explainable diagnostics, and maintenance recommendations for an industrial drive axis.</p>
+  </header>
+  <main>
+    <div class="kpis" id="kpis"></div>
+    <section>
+      <h2>Condition Index Timeline</h2>
+      <div class="chart"><svg id="conditionChart" role="img" aria-label="Condition index timeline"></svg></div>
+    </section>
+    <section>
+      <h2>Alert Episodes</h2>
+      <table id="alertsTable"></table>
+    </section>
+    <section>
+      <h2>Maintenance Recommendations</h2>
+      <table id="recommendationsTable"></table>
+    </section>
+  </main>
+  <script>
+    const data = {json.dumps(payload)};
+    const severityRank = {{ normal: 0, advisory: 1, warning: 2, critical: 3 }};
+
+    function renderKpis() {{
+      const scored = data.scored;
+      const alerts = data.alerts;
+      const maxCondition = Math.max(...scored.map(d => Number(d.condition_index || 0)));
+      const critical = alerts.filter(d => d.severity === "critical").length;
+      const warning = alerts.filter(d => d.severity === "warning").length;
+      const diagnoses = new Set(alerts.map(d => d.diagnosis));
+      const items = [
+        ["Windows", scored.length],
+        ["Max condition", maxCondition.toFixed(1) + "/100"],
+        ["Warning/Critical", warning + "/" + critical],
+        ["Diagnoses", diagnoses.size]
+      ];
+      document.getElementById("kpis").innerHTML = items.map(([label, value]) =>
+        `<div class="kpi"><span>${{label}}</span><strong>${{value}}</strong></div>`
+      ).join("");
+    }}
+
+    function renderChart() {{
+      const scored = data.scored;
+      const svg = document.getElementById("conditionChart");
+      const width = 1000;
+      const height = 240;
+      const pad = 28;
+      svg.setAttribute("viewBox", `0 0 ${{width}} ${{height}}`);
+      const values = scored.map(d => Number(d.condition_index || 0));
+      const maxY = Math.max(100, ...values);
+      const points = values.map((value, index) => {{
+        const x = pad + index * ((width - pad * 2) / Math.max(values.length - 1, 1));
+        const y = height - pad - (value / maxY) * (height - pad * 2);
+        return [x, y];
+      }});
+      const path = points.map((p, i) => `${{i === 0 ? "M" : "L"}} ${{p[0].toFixed(2)}} ${{p[1].toFixed(2)}}`).join(" ");
+      const alertMarks = data.alerts.slice(0, 80).map(alert => {{
+        const idx = scored.findIndex(row => row.window_start === alert.window_start);
+        if (idx < 0) return "";
+        const point = points[idx];
+        return `<circle cx="${{point[0]}}" cy="${{point[1]}}" r="4" fill="${{alert.severity === "critical" ? "#b42318" : "#b7791f"}}" />`;
+      }}).join("");
+      svg.innerHTML = `
+        <line x1="${{pad}}" y1="${{height-pad}}" x2="${{width-pad}}" y2="${{height-pad}}" stroke="#9aa4b2"/>
+        <line x1="${{pad}}" y1="${{pad}}" x2="${{pad}}" y2="${{height-pad}}" stroke="#9aa4b2"/>
+        <line x1="${{pad}}" y1="${{height-pad-0.7*(height-pad*2)}}" x2="${{width-pad}}" y2="${{height-pad-0.7*(height-pad*2)}}" stroke="#b42318" stroke-dasharray="6 6"/>
+        <path d="${{path}}" fill="none" stroke="#136f63" stroke-width="3"/>
+        ${{alertMarks}}
+        <text x="${{pad}}" y="18" fill="#5b6472" font-size="13">Condition index</text>
+      `;
+    }}
+
+    function table(targetId, columns, rows) {{
+      const target = document.getElementById(targetId);
+      const head = `<tr>${{columns.map(c => `<th>${{c.label}}</th>`).join("")}}</tr>`;
+      const body = rows.map(row => `<tr>${{columns.map(c => `<td>${{c.render ? c.render(row[c.key], row) : (row[c.key] ?? "")}}</td>`).join("")}}</tr>`).join("");
+      target.innerHTML = head + body;
+    }}
+
+    renderKpis();
+    renderChart();
+    table("alertsTable", [
+      {{ key: "severity", label: "Severity", render: value => `<span class="badge ${{value}}">${{value}}</span>` }},
+      {{ key: "diagnosis", label: "Diagnosis" }},
+      {{ key: "window_start", label: "Start" }},
+      {{ key: "condition_index", label: "Condition" }},
+      {{ key: "evidence", label: "Evidence" }}
+    ], data.alerts.slice(0, 24));
+    table("recommendationsTable", [
+      {{ key: "priority", label: "Priority" }},
+      {{ key: "diagnosis", label: "Diagnosis" }},
+      {{ key: "downtime_class", label: "Downtime" }},
+      {{ key: "recommended_action", label: "Action" }},
+      {{ key: "verification", label: "Verification" }}
+    ], data.recommendations);
+  </script>
+</body>
+</html>
+"""
+    target.write_text(html_doc, encoding="utf-8")
+

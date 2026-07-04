@@ -1,0 +1,22 @@
+{
+  "healthy": {
+    "description": "Normal operation with expected load, speed, vibration, current, and thermal behavior."
+  },
+  "imbalance": {
+    "maps_to_diagnosis": "rotor_imbalance",
+    "seeded_symptoms": ["elevated 1x vibration", "higher vibration RMS", "mild current increase"]
+  },
+  "loose_mounting": {
+    "maps_to_diagnosis": "mechanical_looseness",
+    "seeded_symptoms": ["impacts", "high crest factor", "high broadband vibration", "high kurtosis"]
+  },
+  "belt_tension_drift": {
+    "maps_to_diagnosis": "belt_tension_drift",
+    "seeded_symptoms": ["load-normalized current rise", "moderate temperature trend", "low-frequency vibration"]
+  },
+  "overheating": {
+    "maps_to_diagnosis": "overheating",
+    "seeded_symptoms": ["temperature threshold crossing", "positive thermal slope", "slightly elevated current"]
+  }
+}
+

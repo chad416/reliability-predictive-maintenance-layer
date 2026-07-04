@@ -1,0 +1,69 @@
+# Reliability and Predictive Maintenance Layer
+
+This repository is a portfolio-grade reliability engineering and predictive-maintenance layer for an industrial motion bench or material-handling micro-cell. It is intentionally more than a notebook: it includes telemetry simulation, signal feature extraction, explainable fault detection, maintenance recommendations, FMEA/FTA documentation, validation evidence, and a self-contained dashboard.
+
+The design follows the project brief: condition monitoring for motor vibration, current, and temperature; alarm thresholds tied to measured evidence; rooted fault narratives; and maintenance actions that are useful to RAM/LCC, commissioning, quality, and connected-services teams.
+
+## What It Demonstrates
+
+- Industrial telemetry pipeline for vibration, current, temperature, speed, load, and acoustic data.
+- Classical signal features before ML: RMS, kurtosis, crest factor, FFT 1x/2x components, broadband energy, temperature slope, and current variation.
+- Robust baseline learning from healthy windows using median and IQR statistics.
+- Explainable diagnostics for rotor imbalance, mechanical looseness, belt tension drift, overheating, and sensor or mounting issues.
+- Maintenance action matrix with priority, inspection steps, spares, downtime class, and verification checks.
+- Documentation pack: FMEA, fault tree, alarm rationalization, validation plan, FAT protocol, commissioning checklist, BOM, and OT/IT integration notes.
+- Reproducible demo pipeline and built-in unit tests.
+
+## Quick Start
+
+Use the bundled Python runtime or any Python 3.10+ environment with `numpy` and `pandas`.
+
+```powershell
+$env:PYTHONPATH = "src"
+python scripts/run_demo.py
+python -m unittest discover -s tests
+```
+
+The demo creates:
+
+- `data/simulated/mixed_faults.csv`
+- `output/demo/features.csv`
+- `output/demo/scored_features.csv`
+- `output/demo/alerts.csv`
+- `output/demo/recommendations.csv`
+- `reports/maintenance_case_report.md`
+- `dashboard/index.html`
+
+Open `dashboard/index.html` in a browser for the self-contained portfolio dashboard.
+
+## CLI Usage
+
+```powershell
+$env:PYTHONPATH = "src"
+python -m rpm_layer.cli demo
+python -m rpm_layer.cli simulate --out data/simulated/mixed_faults.csv
+python -m rpm_layer.cli features --input data/simulated/mixed_faults.csv --out output/features.csv
+python -m rpm_layer.cli baseline --features output/features.csv --out output/baseline.json
+python -m rpm_layer.cli analyze --features output/features.csv --baseline output/baseline.json --out-dir output/demo
+python -m rpm_layer.cli report --out-dir output/demo --report reports/maintenance_case_report.md --dashboard dashboard/index.html
+```
+
+## Repository Map
+
+```text
+config/                 Asset profile and maintenance rules
+dashboard/              Generated self-contained dashboard target
+data/                   Demo data and data contracts
+docs/                   Engineering documentation pack
+reports/                Generated maintenance report target
+scripts/                One-command demo runner
+src/rpm_layer/          Predictive-maintenance package
+tests/                  Unit tests using the standard library test runner
+```
+
+## Engineering Positioning
+
+This project is meant to sit above the motion bench or material-handling cell in the wider automation portfolio. In a real deployment, acquisition would come from accelerometers, current sensing, temperature sensing, and PLC/drive telemetry over OPC UA or MQTT. This implementation includes an industrially realistic simulator so the analytics and documentation can be reviewed before hardware is connected.
+
+The core rule is honesty: the system demonstrates reliability engineering intent, diagnostic reasoning, and validation discipline. It does not claim certified SIL/PL safety or production predictive accuracy without a certified safety chain and field validation campaign.
+

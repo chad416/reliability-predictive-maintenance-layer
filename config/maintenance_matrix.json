@@ -1,0 +1,71 @@
+{
+  "rotor_imbalance": {
+    "priority": "P2",
+    "downtime_class": "planned_short_stop",
+    "recommended_action": "Inspect pulley, coupling, fan, and carried load symmetry; clean buildup; balance rotating element if evidence persists.",
+    "inspection_steps": [
+      "Confirm 1x shaft-frequency vibration rises with speed.",
+      "Check coupling set screws, pulley runout, and product buildup.",
+      "Repeat baseline run after cleaning or balancing."
+    ],
+    "spares": ["coupling insert", "pulley key", "balancing weights"],
+    "verification": "1x vibration amplitude returns within 2.5 robust baseline units for two production cycles."
+  },
+  "mechanical_looseness": {
+    "priority": "P1",
+    "downtime_class": "controlled_stop_required",
+    "recommended_action": "Inspect motor mount, gearbox base, bearing housing, sensor bracket, and frame fasteners; torque and mark hardware.",
+    "inspection_steps": [
+      "Check for high crest factor and broadband vibration.",
+      "Inspect mounting bolts and frame welds.",
+      "Verify accelerometer mounting integrity before declaring a machine fault."
+    ],
+    "spares": ["mounting fasteners", "thread locker", "sensor mounting pad"],
+    "verification": "Crest factor and broadband energy return to baseline after torque check."
+  },
+  "belt_tension_drift": {
+    "priority": "P2",
+    "downtime_class": "planned_adjustment",
+    "recommended_action": "Check belt tension, tracking, roller drag, and product accumulation; adjust tension and verify current draw.",
+    "inspection_steps": [
+      "Compare current trend at similar load and speed.",
+      "Inspect belt tracking marks and roller bearings.",
+      "Re-run loaded and unloaded current checks."
+    ],
+    "spares": ["belt", "idler roller", "tensioner hardware"],
+    "verification": "Load-normalized current returns to baseline and no new temperature rise appears."
+  },
+  "overheating": {
+    "priority": "P1",
+    "downtime_class": "controlled_stop_if_rising",
+    "recommended_action": "Check ventilation, duty cycle, current draw, ambient temperature, drive thermal limits, and mechanical friction.",
+    "inspection_steps": [
+      "Confirm temperature slope remains positive after speed/load normalization.",
+      "Inspect cooling path and motor fan.",
+      "Check drive thermal alarm history."
+    ],
+    "spares": ["fan", "filter", "thermal sensor"],
+    "verification": "Temperature stabilizes below warning threshold under representative load."
+  },
+  "sensor_or_mounting_issue": {
+    "priority": "P3",
+    "downtime_class": "online_check",
+    "recommended_action": "Validate sensor mounting, cable shielding, connector strain relief, and acquisition grounding before opening a mechanical work order.",
+    "inspection_steps": [
+      "Check whether vibration anomaly appears without current or temperature correlation.",
+      "Tap-test sensor mounting and compare with reference sensor.",
+      "Inspect cable routing near VFD or servo power leads."
+    ],
+    "spares": ["accelerometer cable", "sensor mounting adhesive", "shield clamp"],
+    "verification": "Signal noise floor and crest factor return to baseline after sensor remediation."
+  },
+  "healthy": {
+    "priority": "P4",
+    "downtime_class": "none",
+    "recommended_action": "Continue normal operation and retain data for baseline improvement.",
+    "inspection_steps": ["No maintenance intervention required."],
+    "spares": [],
+    "verification": "Routine trend review at the next maintenance interval."
+  }
+}
+

@@ -33,6 +33,14 @@ python -m rpm_layer.cli replay `
   --speed 20
 ```
 
+Remote replay uses `output/spool/telemetry.sqlite` by default. Every batch is committed to the SQLite WAL outbox before delivery and acknowledged only after all selected remote sinks accept it. The default 100,000-batch capacity applies backpressure before disk use becomes unbounded; set it explicitly with `--spool-max-batches` during commissioning. After an outage, drain the ordered backlog with:
+
+```powershell
+python -m rpm_layer.cli spool-drain --sink influx
+```
+
+Use `--no-spool` only for disposable tests. MQTT delivery is at-least-once; consumers should deduplicate by asset ID and timestamp after a partial-batch connection failure.
+
 Publish to MQTT after installing `pip install -e .[mqtt]`:
 
 ```powershell
@@ -47,7 +55,8 @@ Use `--speed 1` for wall-clock replay and `--speed 0` for an unpaced commissioni
 - Grafana datasource **InfluxDB Maintenance** reports a successful connection.
 - The condition dashboard shows condition index, vibration, electrical, thermal, and diagnostic-state data.
 - MQTT subscribers receive ordered telemetry under `factory/mhc/<asset_id>/telemetry`.
-- Stopping the historian causes the CLI to fail after three bounded write attempts rather than silently dropping data.
+- Stopping the historian causes three bounded write attempts, followed by durable local queuing rather than silent data loss.
+- During an outage, queued batches remain in the spool and are removed in FIFO order after a successful drain.
 
 ## Security Boundary
 

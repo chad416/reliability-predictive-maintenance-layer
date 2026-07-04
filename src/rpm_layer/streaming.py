@@ -141,24 +141,41 @@ class MqttTelemetrySink:
             import paho.mqtt.client as mqtt
         except ImportError as exc:
             raise RuntimeError("MQTT publishing requires the optional 'mqtt' dependency.") from exc
-        self._client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
-        self._client.connect(host, port, keepalive=30)
-        self._client.loop_start()
+        self._mqtt = mqtt
+        self._client = None
+        self._host = host
+        self._port = port
         self._topic_prefix = topic_prefix.strip("/")
         self._qos = qos
 
+    def _ensure_connected(self) -> None:
+        if self._client is not None:
+            return
+        client = self._mqtt.Client(self._mqtt.CallbackAPIVersion.VERSION2)
+        client.connect(self._host, self._port, keepalive=30)
+        client.loop_start()
+        self._client = client
+
     def write(self, records: list[dict[str, object]]) -> None:
-        for record in records:
-            asset_id = str(record.get("asset_id", "unknown"))
-            topic = f"{self._topic_prefix}/{asset_id}/telemetry"
-            result = self._client.publish(topic, json.dumps(record, default=str), qos=self._qos)
-            result.wait_for_publish(timeout=10.0)
-            if result.rc != 0:
-                raise RuntimeError(f"MQTT publish failed with result code {result.rc}")
+        self._ensure_connected()
+        assert self._client is not None
+        try:
+            for record in records:
+                asset_id = str(record.get("asset_id", "unknown"))
+                topic = f"{self._topic_prefix}/{asset_id}/telemetry"
+                result = self._client.publish(topic, json.dumps(record, default=str), qos=self._qos)
+                result.wait_for_publish(timeout=10.0)
+                if result.rc != 0:
+                    raise RuntimeError(f"MQTT publish failed with result code {result.rc}")
+        except Exception:
+            self.close()
+            raise
 
     def close(self) -> None:
-        self._client.loop_stop()
-        self._client.disconnect()
+        if self._client is not None:
+            self._client.loop_stop()
+            self._client.disconnect()
+            self._client = None
 
 
 class FanoutSink:

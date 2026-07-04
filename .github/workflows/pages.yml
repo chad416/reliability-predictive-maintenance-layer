@@ -21,10 +21,10 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.11"
 
@@ -35,7 +35,7 @@ jobs:
         run: python scripts/run_demo.py
 
       - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
       - name: Assemble Pages artifact
         run: |
@@ -60,10 +60,11 @@ jobs:
           cp docs/field_validation_protocol.md public/docs/field_validation_protocol.md
           cp docs/interview_walkthrough.md public/docs/interview_walkthrough.md
           cp docs/known_limitations.md public/docs/known_limitations.md
+          cp docs/observability_stack.md public/docs/observability_stack.md
           cp docs/adr/*.md public/docs/adr/
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: public
 
@@ -78,4 +79,4 @@ jobs:
     steps:
       - name: Deploy Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

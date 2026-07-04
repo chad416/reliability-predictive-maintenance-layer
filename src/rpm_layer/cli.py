@@ -17,6 +17,7 @@ from rpm_layer.quality import write_quality_report
 from rpm_layer.recommender import build_recommendations, write_recommendations
 from rpm_layer.reporting import write_markdown_report
 from rpm_layer.simulator import generate_telemetry, write_telemetry
+from rpm_layer.spool import StoreAndForwardSink, drain_spool
 from rpm_layer.streaming import (
     FanoutSink,
     InfluxTelemetrySink,
@@ -149,17 +150,32 @@ def cmd_replay(args: argparse.Namespace) -> None:
     token = args.influx_token or os.environ.get("INFLUXDB_TOKEN", "")
     if "influx" in selected_sinks and not token:
         raise ValueError("InfluxDB token is required via --influx-token or INFLUXDB_TOKEN.")
-    sinks = []
+    local_sinks = []
+    remote_sinks = []
+    store_and_forward = None
     try:
         if "jsonl" in selected_sinks:
-            sinks.append(JsonlSink(args.jsonl_out))
+            local_sinks.append(JsonlSink(args.jsonl_out))
         if "influx" in selected_sinks:
             writer = InfluxWriter(args.influx_url, args.influx_org, args.influx_bucket, token)
-            sinks.append(InfluxTelemetrySink(writer))
+            remote_sinks.append(InfluxTelemetrySink(writer))
         if "mqtt" in selected_sinks:
-            sinks.append(MqttTelemetrySink(args.mqtt_host, args.mqtt_port, args.mqtt_topic_prefix, args.mqtt_qos))
+            remote_sinks.append(MqttTelemetrySink(args.mqtt_host, args.mqtt_port, args.mqtt_topic_prefix, args.mqtt_qos))
+        sinks = list(local_sinks)
+        if remote_sinks:
+            remote_delivery = FanoutSink(remote_sinks)
+            if args.no_spool:
+                sinks.append(remote_delivery)
+            else:
+                store_and_forward = StoreAndForwardSink(
+                    remote_delivery,
+                    args.spool,
+                    retry_interval_s=args.spool_retry_interval,
+                    max_batches=args.spool_max_batches,
+                )
+                sinks.append(store_and_forward)
     except Exception:
-        for sink in reversed(sinks):
+        for sink in reversed(local_sinks + remote_sinks):
             sink.close()
         raise
     stats = replay_telemetry(
@@ -173,6 +189,8 @@ def cmd_replay(args: argparse.Namespace) -> None:
         f"Replayed {stats.records_sent} records in {stats.batches_sent} batches "
         f"({stats.source_duration_s:.3f}s source, {stats.elapsed_s:.3f}s elapsed)"
     )
+    if store_and_forward is not None:
+        print(f"Durable spool pending batches: {store_and_forward.pending_after_close}")
 
 
 def cmd_influx_write(args: argparse.Namespace) -> None:
@@ -186,6 +204,20 @@ def cmd_influx_write(args: argparse.Namespace) -> None:
     for start in range(0, len(lines), args.batch_size):
         writer.write_lines(lines[start : start + args.batch_size])
     print(f"Wrote {len(lines)} line-protocol records to InfluxDB bucket '{args.influx_bucket}'")
+
+
+def cmd_spool_drain(args: argparse.Namespace) -> None:
+    token = args.influx_token or os.environ.get("INFLUXDB_TOKEN", "")
+    if "influx" in args.sink and not token:
+        raise ValueError("InfluxDB token is required via --influx-token or INFLUXDB_TOKEN.")
+    remote_sinks = []
+    if "influx" in args.sink:
+        writer = InfluxWriter(args.influx_url, args.influx_org, args.influx_bucket, token)
+        remote_sinks.append(InfluxTelemetrySink(writer))
+    if "mqtt" in args.sink:
+        remote_sinks.append(MqttTelemetrySink(args.mqtt_host, args.mqtt_port, args.mqtt_topic_prefix, args.mqtt_qos))
+    delivered, remaining = drain_spool(args.spool, FanoutSink(remote_sinks), limit=args.limit)
+    print(f"Drained {delivered} telemetry records; {remaining} batches remain")
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -254,6 +286,10 @@ def build_parser() -> argparse.ArgumentParser:
     replay.add_argument("--mqtt-port", type=int, default=1883)
     replay.add_argument("--mqtt-topic-prefix", default="factory/mhc")
     replay.add_argument("--mqtt-qos", type=int, choices=(0, 1, 2), default=1)
+    replay.add_argument("--spool", default=PROJECT_ROOT / "output" / "spool" / "telemetry.sqlite")
+    replay.add_argument("--no-spool", action="store_true", help="Disable durable store-and-forward for remote sinks")
+    replay.add_argument("--spool-retry-interval", type=float, default=30.0)
+    replay.add_argument("--spool-max-batches", type=int, default=100_000)
     replay.set_defaults(func=cmd_replay)
 
     influx_write = sub.add_parser("influx-write", help="Upload generated line protocol to InfluxDB")
@@ -264,6 +300,20 @@ def build_parser() -> argparse.ArgumentParser:
     influx_write.add_argument("--influx-token", default=None)
     influx_write.add_argument("--batch-size", type=int, default=500)
     influx_write.set_defaults(func=cmd_influx_write)
+
+    spool_drain = sub.add_parser("spool-drain", help="Deliver queued telemetry after a remote service recovers")
+    spool_drain.add_argument("--spool", default=PROJECT_ROOT / "output" / "spool" / "telemetry.sqlite")
+    spool_drain.add_argument("--sink", action="append", choices=("influx", "mqtt"), required=True)
+    spool_drain.add_argument("--limit", type=int, default=1000)
+    spool_drain.add_argument("--influx-url", default="http://localhost:8086")
+    spool_drain.add_argument("--influx-org", default="portfolio")
+    spool_drain.add_argument("--influx-bucket", default="maintenance")
+    spool_drain.add_argument("--influx-token", default=None)
+    spool_drain.add_argument("--mqtt-host", default="localhost")
+    spool_drain.add_argument("--mqtt-port", type=int, default=1883)
+    spool_drain.add_argument("--mqtt-topic-prefix", default="factory/mhc")
+    spool_drain.add_argument("--mqtt-qos", type=int, choices=(0, 1, 2), default=1)
+    spool_drain.set_defaults(func=cmd_spool_drain)
     return parser
 
 

@@ -33,5 +33,4 @@ Telemetry messages should include timestamp, asset ID, units, and sequence numbe
 
 ## Store-and-Forward
 
-The acquisition layer should buffer locally when the network is unavailable. Missing telemetry is itself a reliability event because the machine becomes blind to condition changes.
-
+The acquisition layer buffers outbound telemetry in the SQLite WAL store-and-forward queue when the network is unavailable. Batches are drained in FIFO order after recovery. MQTT delivery is at-least-once, so downstream consumers should deduplicate by asset ID and timestamp. Missing telemetry remains a reliability event because the machine becomes blind to condition changes.

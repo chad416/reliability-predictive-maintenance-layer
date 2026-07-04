@@ -15,6 +15,7 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from rpm_layer.cli import main
+from rpm_layer.spool import SpoolFullError, StoreAndForwardSink, drain_spool
 from rpm_layer.streaming import InfluxWriter, JsonlSink, replay_telemetry, telemetry_line_protocol
 
 
@@ -25,6 +26,17 @@ class RecordingSink:
 
     def write(self, records: list[dict[str, object]]) -> None:
         self.batches.append(records.copy())
+
+    def close(self) -> None:
+        self.closed = True
+
+
+class FailingSink:
+    def __init__(self) -> None:
+        self.closed = False
+
+    def write(self, records: list[dict[str, object]]) -> None:
+        raise ConnectionError("historian unavailable")
 
     def close(self) -> None:
         self.closed = True
@@ -98,6 +110,38 @@ class StreamingTests(unittest.TestCase):
             result = main(["replay", "--input", str(source), "--jsonl-out", str(target), "--max-records", "2"])
             self.assertEqual(result, 0)
             self.assertEqual(len(target.read_text(encoding="utf-8").splitlines()), 2)
+
+    def test_store_and_forward_retains_then_drains_failed_batches(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            spool_path = Path(temp_dir) / "telemetry.sqlite"
+            failing = FailingSink()
+            buffered = StoreAndForwardSink(failing, spool_path, retry_interval_s=60.0)
+            buffered.write(telemetry_frame().head(2).to_dict(orient="records"))
+            buffered.write(telemetry_frame().tail(1).to_dict(orient="records"))
+            buffered.close()
+
+            self.assertTrue(failing.closed)
+            self.assertEqual(buffered.pending_after_close, 2)
+
+            recovered = RecordingSink()
+            delivered, remaining = drain_spool(spool_path, recovered)
+            self.assertEqual(delivered, 3)
+            self.assertEqual(remaining, 0)
+            self.assertEqual([len(batch) for batch in recovered.batches], [2, 1])
+            self.assertTrue(recovered.closed)
+
+    def test_store_and_forward_applies_bounded_backpressure(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            buffered = StoreAndForwardSink(
+                FailingSink(),
+                Path(temp_dir) / "telemetry.sqlite",
+                retry_interval_s=60.0,
+                max_batches=1,
+            )
+            buffered.write(telemetry_frame().head(1).to_dict(orient="records"))
+            with self.assertRaisesRegex(SpoolFullError, "capacity"):
+                buffered.write(telemetry_frame().tail(1).to_dict(orient="records"))
+            buffered.close()
 
 
 if __name__ == "__main__":

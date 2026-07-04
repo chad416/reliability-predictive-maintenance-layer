@@ -12,4 +12,6 @@ dist/
 
 # Generated demo artifacts are reproducible through scripts/run_demo.py.
 output/demo/
+output/replay/
+output/spool/
 data/simulated/mixed_faults.csv

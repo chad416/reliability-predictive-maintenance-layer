@@ -17,6 +17,9 @@ flowchart LR
   Alerts --> Dashboard["Dashboard and case report"]
   Acquisition --> MQTT["MQTT edge broker"]
   Acquisition --> Historian["InfluxDB historian"]
+  Acquisition --> Spool["SQLite WAL store-and-forward"]
+  Spool --> Historian
+  Spool --> MQTT
   Historian --> Grafana["Provisioned Grafana dashboard"]
 ```
 
@@ -29,6 +32,7 @@ flowchart LR
 - `recommender.py` converts alert episodes into maintenance actions, spares, downtime class, and verification criteria.
 - `reporting.py` and `dashboard.py` create the public engineering evidence.
 - `streaming.py` replays acquisition samples with bounded batching and publishes to JSONL, InfluxDB, or MQTT sinks.
+- `spool.py` commits outbound remote batches to a local SQLite WAL queue and drains them in FIFO order after recovery.
 
 ## Integration Boundary
 

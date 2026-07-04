@@ -9,11 +9,13 @@ from rpm_layer.baseline import fit_baseline, load_baseline, save_baseline, score
 from rpm_layer.config import PROJECT_ROOT, load_asset_profile
 from rpm_layer.dashboard import write_dashboard
 from rpm_layer.detector import aggregate_alerts, attach_predictions, detect_alerts, write_alerts
+from rpm_layer.exporters import write_influx_line_protocol, write_work_orders
 from rpm_layer.features import extract_features, read_telemetry, write_features
 from rpm_layer.models import AssetProfile
 from rpm_layer.recommender import build_recommendations, write_recommendations
 from rpm_layer.reporting import write_markdown_report
 from rpm_layer.simulator import generate_telemetry, write_telemetry
+from rpm_layer.validation import validation_metrics, validation_summary, write_validation_artifacts
 
 
 def _profile(path: str | Path) -> AssetProfile:
@@ -67,6 +69,9 @@ def cmd_analyze(args: argparse.Namespace) -> None:
     write_alerts(alerts, out_dir / "alerts.csv")
     write_alerts(aggregated, out_dir / "alert_episodes.csv")
     write_recommendations(recommendations, out_dir / "recommendations.csv")
+    write_validation_artifacts(scored, out_dir)
+    write_work_orders(recommendations, out_dir / "work_orders.json")
+    write_influx_line_protocol(scored, out_dir / "condition_windows.lp")
     print(f"Wrote analysis artifacts under: {out_dir}")
 
 
@@ -76,8 +81,10 @@ def cmd_report(args: argparse.Namespace) -> None:
     alerts = pd.read_csv(out_dir / "alerts.csv") if (out_dir / "alerts.csv").exists() else pd.DataFrame()
     aggregated = pd.read_csv(out_dir / "alert_episodes.csv") if (out_dir / "alert_episodes.csv").exists() else pd.DataFrame()
     recommendations = pd.read_csv(out_dir / "recommendations.csv")
+    summary = pd.read_csv(out_dir / "validation_summary.csv") if (out_dir / "validation_summary.csv").exists() else validation_summary(scored)
+    metrics = validation_metrics(scored)
     write_markdown_report(scored, alerts, aggregated, recommendations, args.report)
-    write_dashboard(scored, alerts, recommendations, args.dashboard)
+    write_dashboard(scored, alerts, recommendations, args.dashboard, summary, metrics)
     print(f"Wrote report: {args.report}")
     print(f"Wrote dashboard: {args.dashboard}")
 
@@ -107,8 +114,11 @@ def cmd_demo(args: argparse.Namespace) -> None:
     write_alerts(alerts, out_dir / "alerts.csv")
     write_alerts(aggregated, out_dir / "alert_episodes.csv")
     write_recommendations(recommendations, out_dir / "recommendations.csv")
+    summary, _, metrics = write_validation_artifacts(scored, out_dir)
+    write_work_orders(recommendations, out_dir / "work_orders.json")
+    write_influx_line_protocol(scored, out_dir / "condition_windows.lp")
     write_markdown_report(scored, alerts, aggregated, recommendations, args.report)
-    write_dashboard(scored, alerts, recommendations, args.dashboard)
+    write_dashboard(scored, alerts, recommendations, args.dashboard, summary, metrics)
 
     print(f"Telemetry: {telemetry_path}")
     print(f"Features: {feature_path}")
@@ -182,4 +192,3 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

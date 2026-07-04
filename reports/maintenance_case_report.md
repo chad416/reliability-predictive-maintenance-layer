@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-The reliability layer analyzed 239 diagnostic windows and produced 119 alert windows. The maximum condition index was 51.6/100, with 31 critical windows. The highest-priority recommendations are listed below and are tied directly to measured vibration, current, and thermal evidence.
+The reliability layer analyzed 239 diagnostic windows and produced 119 alert windows. The maximum condition index was 51.6/100, with 31 critical windows. Window accuracy is 90.4%, seeded-fault window recall is 83.8%, and the healthy false-alert rate is 0.0%.
 
 This report is designed as FAT-style evidence for a portfolio review: it shows the seeded condition, the features used to detect it, the resulting diagnosis, and the maintenance response.
 
@@ -26,13 +26,23 @@ This report is designed as FAT-style evidence for a portfolio review: it shows t
 
 ## Validation Detection Summary
 
-| validation_label | expected_diagnosis | windows | detected_windows | first_detection |
-| --- | --- | --- | --- | --- |
-| healthy | healthy | 97 | 97 | 2026-07-01T08:00:00 |
-| imbalance | rotor_imbalance | 36 | 36 | 2026-07-01T08:04:00 |
-| loose_mounting | mechanical_looseness | 40 | 34 | 2026-07-01T08:09:50 |
-| belt_tension_drift | belt_tension_drift | 36 | 21 | 2026-07-01T08:14:55 |
-| overheating | overheating | 30 | 28 | 2026-07-01T08:17:00 |
+| validation_label | expected_diagnosis | windows | detected_windows | detection_rate_pct | first_detection | detection_delay_s |
+| --- | --- | --- | --- | --- | --- | --- |
+| healthy | healthy | 97 | 97 | 100.0 | 2026-07-01T08:00:00 | 0.0 |
+| imbalance | rotor_imbalance | 36 | 36 | 100.0 | 2026-07-01T08:04:00 | 0.0 |
+| loose_mounting | mechanical_looseness | 40 | 34 | 85.0 | 2026-07-01T08:09:50 | 30.0 |
+| belt_tension_drift | belt_tension_drift | 36 | 21 | 58.33 | 2026-07-01T08:14:55 | 65.0 |
+| overheating | overheating | 30 | 28 | 93.33 | 2026-07-01T08:17:00 | 10.0 |
+
+## Confusion Matrix
+
+| expected_diagnosis | healthy | rotor_imbalance | mechanical_looseness | belt_tension_drift | overheating |
+| --- | --- | --- | --- | --- | --- |
+| healthy | 97 | 0 | 0 | 0 | 0 |
+| rotor_imbalance | 0 | 36 | 0 | 0 | 0 |
+| mechanical_looseness | 6 | 0 | 34 | 0 | 0 |
+| belt_tension_drift | 15 | 0 | 0 | 21 | 0 |
+| overheating | 2 | 0 | 0 | 0 | 28 |
 
 ## Engineering Notes
 

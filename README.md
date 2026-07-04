@@ -34,6 +34,11 @@ The demo creates:
 - `output/demo/scored_features.csv`
 - `output/demo/alerts.csv`
 - `output/demo/recommendations.csv`
+- `output/demo/validation_summary.csv`
+- `output/demo/confusion_matrix.csv`
+- `output/demo/validation_metrics.json`
+- `output/demo/work_orders.json`
+- `output/demo/condition_windows.lp`
 - `reports/maintenance_case_report.md`
 - `dashboard/index.html`
 
@@ -72,6 +77,16 @@ scripts/                One-command demo runner
 src/rpm_layer/          Predictive-maintenance package
 tests/                  Unit tests using the standard library test runner
 ```
+
+## Evidence Pack
+
+The generated evidence pack is designed for engineering review:
+
+- `reports/maintenance_case_report.md` gives the executive summary, alert episodes, maintenance actions, validation table, and confusion matrix.
+- `dashboard/index.html` gives a self-contained visual review surface and is published through GitHub Pages.
+- `output/demo/work_orders.json` converts recommendations into maintenance work-order shaped records.
+- `output/demo/condition_windows.lp` exports condition windows in InfluxDB line protocol for historian or Grafana integration.
+- `docs/traceability_matrix.md` links project requirements to implementation and evidence artifacts.
 
 ## Engineering Positioning
 

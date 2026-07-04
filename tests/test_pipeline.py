@@ -11,10 +11,12 @@ if str(SRC) not in sys.path:
 
 from rpm_layer.baseline import fit_baseline, score_features
 from rpm_layer.detector import aggregate_alerts, attach_predictions, detect_alerts
+from rpm_layer.exporters import build_work_orders
 from rpm_layer.features import extract_features
 from rpm_layer.models import AssetProfile
 from rpm_layer.recommender import build_recommendations
 from rpm_layer.simulator import generate_telemetry
+from rpm_layer.validation import confusion_matrix, validation_metrics, validation_summary
 
 
 PROFILE = AssetProfile(
@@ -47,6 +49,10 @@ class PipelineTests(unittest.TestCase):
         scored = attach_predictions(scored, alerts)
         episodes = aggregate_alerts(alerts)
         recommendations = build_recommendations(episodes)
+        summary = validation_summary(scored)
+        matrix = confusion_matrix(scored)
+        metrics = validation_metrics(scored)
+        work_orders = build_work_orders(recommendations)
 
         self.assertFalse(features.empty)
         self.assertIn("condition_index", scored.columns)
@@ -55,6 +61,12 @@ class PipelineTests(unittest.TestCase):
         self.assertFalse(alerts.empty)
         self.assertFalse(recommendations.empty)
         self.assertTrue(expected.issubset(set(recommendations["diagnosis"])))
+        self.assertFalse(summary.empty)
+        self.assertFalse(matrix.empty)
+        self.assertEqual(metrics["detected_fault_classes"], metrics["expected_fault_classes"])
+        self.assertEqual(metrics["healthy_false_alert_rate_pct"], 0.0)
+        self.assertEqual(len(work_orders), len(recommendations))
+        self.assertTrue(all(order["status"] == "ready_for_maintenance_review" for order in work_orders))
 
 
 if __name__ == "__main__":

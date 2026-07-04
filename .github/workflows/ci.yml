@@ -64,4 +64,4 @@ jobs:
             reports/maintenance_case_report.md
             output/demo/*.csv
             output/demo/*.json
-
+            output/demo/*.lp

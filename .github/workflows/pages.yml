@@ -44,9 +44,16 @@ jobs:
           cp reports/maintenance_case_report.md public/evidence/maintenance_case_report.md
           cp output/demo/alert_episodes.csv public/evidence/alert_episodes.csv
           cp output/demo/recommendations.csv public/evidence/recommendations.csv
+          cp output/demo/validation_summary.csv public/evidence/validation_summary.csv
+          cp output/demo/confusion_matrix.csv public/evidence/confusion_matrix.csv
+          cp output/demo/validation_metrics.json public/evidence/validation_metrics.json
+          cp output/demo/work_orders.json public/evidence/work_orders.json
+          cp output/demo/condition_windows.lp public/evidence/condition_windows.lp
           cp docs/fmea.md public/docs/fmea.md
           cp docs/fat_protocol.md public/docs/fat_protocol.md
           cp docs/validation_plan.md public/docs/validation_plan.md
+          cp docs/traceability_matrix.md public/docs/traceability_matrix.md
+          cp docs/evidence_pack.md public/docs/evidence_pack.md
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

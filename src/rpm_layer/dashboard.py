@@ -16,6 +16,8 @@ def write_dashboard(
     alerts: pd.DataFrame,
     recommendations: pd.DataFrame,
     path: str | Path,
+    validation_summary: pd.DataFrame | None = None,
+    validation_metrics: dict | None = None,
 ) -> None:
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -23,6 +25,8 @@ def write_dashboard(
         "scored": _records(scored_features),
         "alerts": _records(alerts),
         "recommendations": _records(recommendations),
+        "validationSummary": _records(validation_summary) if validation_summary is not None else [],
+        "validationMetrics": validation_metrics or {},
     }
     title = "Reliability and Predictive Maintenance Layer"
     html_doc = f"""<!doctype html>
@@ -100,6 +104,10 @@ def write_dashboard(
       <h2>Maintenance Recommendations</h2>
       <table id="recommendationsTable"></table>
     </section>
+    <section>
+      <h2>Validation Evidence</h2>
+      <table id="validationTable"></table>
+    </section>
   </main>
   <script>
     const data = {json.dumps(payload)};
@@ -112,10 +120,13 @@ def write_dashboard(
       const critical = alerts.filter(d => d.severity === "critical").length;
       const warning = alerts.filter(d => d.severity === "warning").length;
       const diagnoses = new Set(alerts.map(d => d.diagnosis));
+      const metrics = data.validationMetrics || {{}};
       const items = [
         ["Windows", scored.length],
         ["Max condition", maxCondition.toFixed(1) + "/100"],
         ["Warning/Critical", warning + "/" + critical],
+        ["Fault recall", Number(metrics.fault_window_recall_pct || 0).toFixed(1) + "%"],
+        ["Healthy false alerts", Number(metrics.healthy_false_alert_rate_pct || 0).toFixed(1) + "%"],
         ["Diagnoses", diagnoses.size]
       ];
       document.getElementById("kpis").innerHTML = items.map(([label, value]) =>
@@ -177,9 +188,16 @@ def write_dashboard(
       {{ key: "recommended_action", label: "Action" }},
       {{ key: "verification", label: "Verification" }}
     ], data.recommendations);
+    table("validationTable", [
+      {{ key: "validation_label", label: "Seeded condition" }},
+      {{ key: "expected_diagnosis", label: "Expected" }},
+      {{ key: "windows", label: "Windows" }},
+      {{ key: "detected_windows", label: "Detected" }},
+      {{ key: "detection_rate_pct", label: "Detection %" }},
+      {{ key: "detection_delay_s", label: "Delay s" }}
+    ], data.validationSummary);
   </script>
 </body>
 </html>
 """
     target.write_text(html_doc, encoding="utf-8")
-

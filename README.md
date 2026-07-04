@@ -40,6 +40,8 @@ The demo creates:
 - `output/demo/data_quality.json`
 - `output/demo/work_orders.json`
 - `output/demo/condition_windows.lp`
+- `output/demo/mqtt_outbox.jsonl`
+- `output/demo/opcua_snapshot.json`
 - `reports/maintenance_case_report.md`
 - `dashboard/index.html`
 
@@ -88,6 +90,8 @@ The generated evidence pack is designed for engineering review:
 - `output/demo/work_orders.json` converts recommendations into maintenance work-order shaped records.
 - `output/demo/data_quality.json` records timestamp, sampling, null, duplicate, and range integrity checks.
 - `output/demo/condition_windows.lp` exports condition windows in InfluxDB line protocol for historian or Grafana integration.
+- `output/demo/mqtt_outbox.jsonl` shows the MQTT topic and payload contract for condition, alert, and recommendation messages.
+- `output/demo/opcua_snapshot.json` shows the OPC UA-facing condition and maintenance node model.
 - `docs/traceability_matrix.md` links project requirements to implementation and evidence artifacts.
 
 ## Engineering Positioning

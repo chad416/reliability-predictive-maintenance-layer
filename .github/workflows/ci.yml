@@ -65,3 +65,4 @@ jobs:
             output/demo/*.csv
             output/demo/*.json
             output/demo/*.lp
+            output/demo/*.jsonl

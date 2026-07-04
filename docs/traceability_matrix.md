@@ -11,6 +11,7 @@
 | Prove telemetry is usable before analytics | `output/demo/data_quality.json` | `src/rpm_layer/quality.py` |
 | Produce maintenance actions, spares, and verification criteria | `output/demo/recommendations.csv`, `output/demo/work_orders.json` | `src/rpm_layer/recommender.py`, `src/rpm_layer/exporters.py` |
 | Provide operations dashboard | `dashboard/index.html`, GitHub Pages site | `src/rpm_layer/dashboard.py` |
+| Demonstrate OT/IT integration contracts | `output/demo/mqtt_outbox.jsonl`, `output/demo/opcua_snapshot.json`, `output/demo/condition_windows.lp` | `src/rpm_layer/exporters.py` |
 | Provide RAM/FMEA-style engineering documentation | `docs/fmea.md`, `docs/fault_tree.md`, `docs/maintenance_strategy.md` | Documentation pack |
 | Provide CI-verifiable reproducibility | GitHub Actions CI run | `.github/workflows/ci.yml` |
 

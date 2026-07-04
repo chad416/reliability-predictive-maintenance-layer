@@ -11,7 +11,7 @@ if str(SRC) not in sys.path:
 
 from rpm_layer.baseline import fit_baseline, score_features
 from rpm_layer.detector import aggregate_alerts, attach_predictions, detect_alerts
-from rpm_layer.exporters import build_work_orders
+from rpm_layer.exporters import build_mqtt_outbox, build_opcua_snapshot, build_work_orders
 from rpm_layer.features import extract_features
 from rpm_layer.models import AssetProfile
 from rpm_layer.quality import assess_telemetry_quality
@@ -55,6 +55,8 @@ class PipelineTests(unittest.TestCase):
         matrix = confusion_matrix(scored)
         metrics = validation_metrics(scored)
         work_orders = build_work_orders(recommendations)
+        mqtt_messages = build_mqtt_outbox(scored, alerts, recommendations)
+        opcua_snapshot = build_opcua_snapshot(scored, alerts, recommendations)
 
         self.assertFalse(features.empty)
         self.assertEqual(quality["status"], "pass")
@@ -71,6 +73,8 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(metrics["healthy_false_alert_rate_pct"], 0.0)
         self.assertEqual(len(work_orders), len(recommendations))
         self.assertTrue(all(order["status"] == "ready_for_maintenance_review" for order in work_orders))
+        self.assertGreater(len(mqtt_messages), len(recommendations))
+        self.assertIn("Assets/MHC-CONV-AXIS-01/Condition/ConditionIndex", opcua_snapshot["nodes"])
 
 
 if __name__ == "__main__":

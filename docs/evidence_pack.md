@@ -15,5 +15,7 @@ The project generates a complete review pack with `python scripts/run_demo.py`.
 | `output/demo/validation_metrics.json` | Portfolio-ready validation KPIs |
 | `output/demo/data_quality.json` | Telemetry integrity gate for timestamps, gaps, nulls, duplicates, and physical ranges |
 | `output/demo/condition_windows.lp` | InfluxDB line protocol for time-series ingestion |
+| `output/demo/mqtt_outbox.jsonl` | MQTT-style condition, alert, and recommendation messages |
+| `output/demo/opcua_snapshot.json` | OPC UA-facing node snapshot for supervisory integration |
 
 The raw telemetry file is intentionally ignored because it is reproducible and large. Reviewers should regenerate it instead of versioning it.

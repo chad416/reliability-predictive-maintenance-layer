@@ -50,6 +50,8 @@ jobs:
           cp output/demo/data_quality.json public/evidence/data_quality.json
           cp output/demo/work_orders.json public/evidence/work_orders.json
           cp output/demo/condition_windows.lp public/evidence/condition_windows.lp
+          cp output/demo/mqtt_outbox.jsonl public/evidence/mqtt_outbox.jsonl
+          cp output/demo/opcua_snapshot.json public/evidence/opcua_snapshot.json
           cp docs/fmea.md public/docs/fmea.md
           cp docs/fat_protocol.md public/docs/fat_protocol.md
           cp docs/validation_plan.md public/docs/validation_plan.md

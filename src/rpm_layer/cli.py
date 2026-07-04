@@ -9,7 +9,7 @@ from rpm_layer.baseline import fit_baseline, load_baseline, save_baseline, score
 from rpm_layer.config import PROJECT_ROOT, load_asset_profile, load_json
 from rpm_layer.dashboard import write_dashboard
 from rpm_layer.detector import aggregate_alerts, attach_predictions, detect_alerts, write_alerts
-from rpm_layer.exporters import write_influx_line_protocol, write_work_orders
+from rpm_layer.exporters import write_influx_line_protocol, write_mqtt_outbox, write_opcua_snapshot, write_work_orders
 from rpm_layer.features import extract_features, read_telemetry, write_features
 from rpm_layer.models import AssetProfile
 from rpm_layer.quality import write_quality_report
@@ -73,6 +73,8 @@ def cmd_analyze(args: argparse.Namespace) -> None:
     write_validation_artifacts(scored, out_dir)
     write_work_orders(recommendations, out_dir / "work_orders.json")
     write_influx_line_protocol(scored, out_dir / "condition_windows.lp")
+    write_mqtt_outbox(scored, alerts, recommendations, out_dir / "mqtt_outbox.jsonl")
+    write_opcua_snapshot(scored, alerts, recommendations, out_dir / "opcua_snapshot.json")
     print(f"Wrote analysis artifacts under: {out_dir}")
 
 
@@ -120,6 +122,8 @@ def cmd_demo(args: argparse.Namespace) -> None:
     summary, _, metrics = write_validation_artifacts(scored, out_dir)
     write_work_orders(recommendations, out_dir / "work_orders.json")
     write_influx_line_protocol(scored, out_dir / "condition_windows.lp")
+    write_mqtt_outbox(scored, alerts, recommendations, out_dir / "mqtt_outbox.jsonl")
+    write_opcua_snapshot(scored, alerts, recommendations, out_dir / "opcua_snapshot.json")
     write_markdown_report(scored, alerts, aggregated, recommendations, args.report, quality)
     write_dashboard(scored, alerts, recommendations, args.dashboard, summary, metrics, quality)
 

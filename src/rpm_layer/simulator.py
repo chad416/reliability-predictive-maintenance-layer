@@ -131,7 +131,7 @@ def generate_telemetry(
     timestamps = [start_time + timedelta(seconds=float(value)) for value in t_s]
     return pd.DataFrame(
         {
-            "timestamp": [value.isoformat(timespec="milliseconds") for value in timestamps],
+            "timestamp": [value.isoformat(timespec="microseconds") for value in timestamps],
             "asset_id": profile.asset_id,
             "speed_rpm": np.round(speed_rpm, 3),
             "load_pct": np.round(load_pct, 3),

@@ -2,18 +2,22 @@
 
 ## Executive Summary
 
-The reliability layer analyzed 239 diagnostic windows and produced 119 alert windows. The maximum condition index was 51.6/100, with 31 critical windows. Window accuracy is 90.4%, seeded-fault window recall is 83.8%, and the healthy false-alert rate is 0.0%.
+The reliability layer analyzed 240 diagnostic windows and produced 119 alert windows. The maximum condition index was 50.7/100, with 31 critical windows. Window accuracy is 90.4%, seeded-fault window recall is 83.8%, and the healthy false-alert rate is 0.0%.
 
 This report is designed as FAT-style evidence for a portfolio review: it shows the seeded condition, the features used to detect it, the resulting diagnosis, and the maintenance response.
+
+## Data Quality Gate
+
+Telemetry quality status is pass; estimated sampling is 120.00 Hz with a maximum sample gap of 8.33 ms.
 
 ## Alert Episodes
 
 | diagnosis | severity | first_seen | last_seen | windows | max_score | max_condition_index | evidence |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| mechanical_looseness | critical | 2026-07-01T08:09:50 | 2026-07-01T08:12:39.991000 | 34 | 9.967 | 51.58 | score_vib_kurtosis=-0.809; score_vib_crest_factor=-1.083; score_vib_broadband_g=20.974 |
-| rotor_imbalance | critical | 2026-07-01T08:04:00 | 2026-07-01T08:06:59.991000 | 36 | 18.845 | 45.33 | score_vib_fft_1x_g=15.537; score_vib_rms_g=20.713; score_current_mean_a=0.643 |
-| overheating | critical | 2026-07-01T08:17:00 | 2026-07-01T08:19:19.991000 | 28 | 7.047 | 26.13 | score_temperature_mean_c=7.862; score_temperature_slope_c_per_min=7.663; score_current_mean_a=0.35 |
-| belt_tension_drift | warning | 2026-07-01T08:14:55 | 2026-07-01T08:16:49.991000 | 21 | 3.29 | 22.47 | score_current_mean_a=3.469; score_temperature_mean_c=1.892; score_vib_broadband_g=5.428 |
+| mechanical_looseness | critical | 2026-07-01T08:09:50 | 2026-07-01T08:12:39.991667 | 34 | 9.644 | 50.69 | score_vib_kurtosis=-0.813; score_vib_crest_factor=-1.084; score_vib_broadband_g=20.126 |
+| rotor_imbalance | critical | 2026-07-01T08:04:00 | 2026-07-01T08:06:59.991667 | 36 | 18.833 | 45.05 | score_vib_fft_1x_g=15.634; score_vib_rms_g=20.504; score_current_mean_a=0.65 |
+| overheating | critical | 2026-07-01T08:17:00 | 2026-07-01T08:19:19.991667 | 28 | 7.036 | 25.97 | score_temperature_mean_c=7.906; score_temperature_slope_c_per_min=7.546; score_current_mean_a=0.359 |
+| belt_tension_drift | warning | 2026-07-01T08:14:55 | 2026-07-01T08:16:49.991667 | 21 | 3.247 | 22.15 | score_current_mean_a=3.453; score_temperature_mean_c=1.894; score_vib_broadband_g=5.199 |
 
 ## Maintenance Action Matrix
 
@@ -28,7 +32,7 @@ This report is designed as FAT-style evidence for a portfolio review: it shows t
 
 | validation_label | expected_diagnosis | windows | detected_windows | detection_rate_pct | first_detection | detection_delay_s |
 | --- | --- | --- | --- | --- | --- | --- |
-| healthy | healthy | 97 | 97 | 100.0 | 2026-07-01T08:00:00 | 0.0 |
+| healthy | healthy | 98 | 98 | 100.0 | 2026-07-01T08:00:00 | 0.0 |
 | imbalance | rotor_imbalance | 36 | 36 | 100.0 | 2026-07-01T08:04:00 | 0.0 |
 | loose_mounting | mechanical_looseness | 40 | 34 | 85.0 | 2026-07-01T08:09:50 | 30.0 |
 | belt_tension_drift | belt_tension_drift | 36 | 21 | 58.33 | 2026-07-01T08:14:55 | 65.0 |
@@ -38,7 +42,7 @@ This report is designed as FAT-style evidence for a portfolio review: it shows t
 
 | expected_diagnosis | healthy | rotor_imbalance | mechanical_looseness | belt_tension_drift | overheating |
 | --- | --- | --- | --- | --- | --- |
-| healthy | 97 | 0 | 0 | 0 | 0 |
+| healthy | 98 | 0 | 0 | 0 | 0 |
 | rotor_imbalance | 0 | 36 | 0 | 0 | 0 |
 | mechanical_looseness | 6 | 0 | 34 | 0 | 0 |
 | belt_tension_drift | 15 | 0 | 0 | 21 | 0 |

@@ -14,6 +14,7 @@ from rpm_layer.detector import aggregate_alerts, attach_predictions, detect_aler
 from rpm_layer.exporters import build_work_orders
 from rpm_layer.features import extract_features
 from rpm_layer.models import AssetProfile
+from rpm_layer.quality import assess_telemetry_quality
 from rpm_layer.recommender import build_recommendations
 from rpm_layer.simulator import generate_telemetry
 from rpm_layer.validation import confusion_matrix, validation_metrics, validation_summary
@@ -42,6 +43,7 @@ class PipelineTests(unittest.TestCase):
 
     def test_features_and_detection_produce_maintenance_recommendations(self) -> None:
         telemetry = generate_telemetry(PROFILE, duration_s=1200.0, seed=5)
+        quality = assess_telemetry_quality(telemetry, expected_sampling_hz=PROFILE.sampling_hz)
         features = extract_features(telemetry, sampling_hz=PROFILE.sampling_hz)
         baseline = fit_baseline(features)
         scored = score_features(features, baseline)
@@ -55,6 +57,8 @@ class PipelineTests(unittest.TestCase):
         work_orders = build_work_orders(recommendations)
 
         self.assertFalse(features.empty)
+        self.assertEqual(quality["status"], "pass")
+        self.assertEqual(quality["sample_count"], len(telemetry))
         self.assertIn("condition_index", scored.columns)
         self.assertGreater(scored["condition_index"].max(), 10.0)
         expected = {"rotor_imbalance", "mechanical_looseness", "belt_tension_drift", "overheating"}

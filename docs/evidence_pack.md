@@ -13,7 +13,7 @@ The project generates a complete review pack with `python scripts/run_demo.py`.
 | `output/demo/validation_summary.csv` | Detection count and delay by seeded condition |
 | `output/demo/confusion_matrix.csv` | Expected-versus-predicted diagnostic matrix |
 | `output/demo/validation_metrics.json` | Portfolio-ready validation KPIs |
+| `output/demo/data_quality.json` | Telemetry integrity gate for timestamps, gaps, nulls, duplicates, and physical ranges |
 | `output/demo/condition_windows.lp` | InfluxDB line protocol for time-series ingestion |
 
 The raw telemetry file is intentionally ignored because it is reproducible and large. Reviewers should regenerate it instead of versioning it.
-

@@ -18,6 +18,7 @@ def write_dashboard(
     path: str | Path,
     validation_summary: pd.DataFrame | None = None,
     validation_metrics: dict | None = None,
+    quality_metrics: dict | None = None,
 ) -> None:
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -27,6 +28,7 @@ def write_dashboard(
         "recommendations": _records(recommendations),
         "validationSummary": _records(validation_summary) if validation_summary is not None else [],
         "validationMetrics": validation_metrics or {},
+        "qualityMetrics": quality_metrics or {},
     }
     title = "Reliability and Predictive Maintenance Layer"
     html_doc = f"""<!doctype html>
@@ -121,9 +123,11 @@ def write_dashboard(
       const warning = alerts.filter(d => d.severity === "warning").length;
       const diagnoses = new Set(alerts.map(d => d.diagnosis));
       const metrics = data.validationMetrics || {{}};
+      const quality = data.qualityMetrics || {{}};
       const items = [
         ["Windows", scored.length],
         ["Max condition", maxCondition.toFixed(1) + "/100"],
+        ["Data quality", quality.status || "n/a"],
         ["Warning/Critical", warning + "/" + critical],
         ["Fault recall", Number(metrics.fault_window_recall_pct || 0).toFixed(1) + "%"],
         ["Healthy false alerts", Number(metrics.healthy_false_alert_rate_pct || 0).toFixed(1) + "%"],

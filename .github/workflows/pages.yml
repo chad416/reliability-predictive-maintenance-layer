@@ -47,6 +47,7 @@ jobs:
           cp output/demo/validation_summary.csv public/evidence/validation_summary.csv
           cp output/demo/confusion_matrix.csv public/evidence/confusion_matrix.csv
           cp output/demo/validation_metrics.json public/evidence/validation_metrics.json
+          cp output/demo/data_quality.json public/evidence/data_quality.json
           cp output/demo/work_orders.json public/evidence/work_orders.json
           cp output/demo/condition_windows.lp public/evidence/condition_windows.lp
           cp docs/fmea.md public/docs/fmea.md

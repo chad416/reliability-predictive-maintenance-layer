@@ -6,12 +6,13 @@ from pathlib import Path
 import pandas as pd
 
 from rpm_layer.baseline import fit_baseline, load_baseline, save_baseline, score_features
-from rpm_layer.config import PROJECT_ROOT, load_asset_profile
+from rpm_layer.config import PROJECT_ROOT, load_asset_profile, load_json
 from rpm_layer.dashboard import write_dashboard
 from rpm_layer.detector import aggregate_alerts, attach_predictions, detect_alerts, write_alerts
 from rpm_layer.exporters import write_influx_line_protocol, write_work_orders
 from rpm_layer.features import extract_features, read_telemetry, write_features
 from rpm_layer.models import AssetProfile
+from rpm_layer.quality import write_quality_report
 from rpm_layer.recommender import build_recommendations, write_recommendations
 from rpm_layer.reporting import write_markdown_report
 from rpm_layer.simulator import generate_telemetry, write_telemetry
@@ -83,8 +84,9 @@ def cmd_report(args: argparse.Namespace) -> None:
     recommendations = pd.read_csv(out_dir / "recommendations.csv")
     summary = pd.read_csv(out_dir / "validation_summary.csv") if (out_dir / "validation_summary.csv").exists() else validation_summary(scored)
     metrics = validation_metrics(scored)
-    write_markdown_report(scored, alerts, aggregated, recommendations, args.report)
-    write_dashboard(scored, alerts, recommendations, args.dashboard, summary, metrics)
+    quality = load_json(out_dir / "data_quality.json") if (out_dir / "data_quality.json").exists() else {}
+    write_markdown_report(scored, alerts, aggregated, recommendations, args.report, quality)
+    write_dashboard(scored, alerts, recommendations, args.dashboard, summary, metrics, quality)
     print(f"Wrote report: {args.report}")
     print(f"Wrote dashboard: {args.dashboard}")
 
@@ -99,6 +101,7 @@ def cmd_demo(args: argparse.Namespace) -> None:
     profile = _profile(profile_path)
     telemetry = generate_telemetry(profile=profile, duration_s=args.duration_sec, sampling_hz=profile.sampling_hz, seed=args.seed)
     write_telemetry(telemetry, telemetry_path)
+    quality = write_quality_report(telemetry, profile.sampling_hz, out_dir / "data_quality.json")
     features = extract_features(telemetry, sampling_hz=profile.sampling_hz)
     write_features(features, feature_path)
     baseline = fit_baseline(features)
@@ -117,8 +120,8 @@ def cmd_demo(args: argparse.Namespace) -> None:
     summary, _, metrics = write_validation_artifacts(scored, out_dir)
     write_work_orders(recommendations, out_dir / "work_orders.json")
     write_influx_line_protocol(scored, out_dir / "condition_windows.lp")
-    write_markdown_report(scored, alerts, aggregated, recommendations, args.report)
-    write_dashboard(scored, alerts, recommendations, args.dashboard, summary, metrics)
+    write_markdown_report(scored, alerts, aggregated, recommendations, args.report, quality)
+    write_dashboard(scored, alerts, recommendations, args.dashboard, summary, metrics, quality)
 
     print(f"Telemetry: {telemetry_path}")
     print(f"Features: {feature_path}")

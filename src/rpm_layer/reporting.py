@@ -28,6 +28,7 @@ def write_markdown_report(
     aggregated_alerts: pd.DataFrame,
     recommendations: pd.DataFrame,
     path: str | Path,
+    quality_metrics: dict | None = None,
 ) -> None:
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -39,6 +40,13 @@ def write_markdown_report(
     detection = validation_summary(scored_features)
     matrix = confusion_matrix(scored_features)
     metrics = validation_metrics(scored_features)
+    quality = quality_metrics or {}
+    quality_status = str(quality.get("status", "not_available"))
+    quality_line = (
+        f"Telemetry quality status is {quality_status}; estimated sampling is "
+        f"{float(quality.get('estimated_sampling_hz', 0.0)):.2f} Hz with a maximum sample gap of "
+        f"{float(quality.get('gap_max_ms', 0.0)):.2f} ms."
+    )
 
     report = f"""# Predictive Maintenance Case Report
 
@@ -47,6 +55,10 @@ def write_markdown_report(
 The reliability layer analyzed {total_windows} diagnostic windows and produced {alert_windows} alert windows. The maximum condition index was {max_condition:.1f}/100, with {critical_windows} critical windows. Window accuracy is {metrics["window_accuracy_pct"]:.1f}%, seeded-fault window recall is {metrics["fault_window_recall_pct"]:.1f}%, and the healthy false-alert rate is {metrics["healthy_false_alert_rate_pct"]:.1f}%.
 
 This report is designed as FAT-style evidence for a portfolio review: it shows the seeded condition, the features used to detect it, the resulting diagnosis, and the maintenance response.
+
+## Data Quality Gate
+
+{quality_line}
 
 ## Alert Episodes
 

@@ -42,7 +42,7 @@ jobs:
 
       - name: Assemble Pages artifact
         run: |
-          mkdir -p public/evidence public/docs/adr
+          mkdir -p public/evidence public/docs/adr public/docs/assets
           cp dashboard/index.html public/index.html
           cp reports/maintenance_case_report.md public/evidence/maintenance_case_report.md
           cp output/demo/alert_episodes.csv public/evidence/alert_episodes.csv
@@ -66,6 +66,11 @@ jobs:
           cp docs/field_validation_protocol.md public/docs/field_validation_protocol.md
           cp docs/interview_walkthrough.md public/docs/interview_walkthrough.md
           cp docs/known_limitations.md public/docs/known_limitations.md
+          cp docs/project_completion_status.md public/docs/project_completion_status.md
+          cp docs/seeded_fault_root_cause_notes.md public/docs/seeded_fault_root_cause_notes.md
+          cp docs/kpi_definition_sheet.md public/docs/kpi_definition_sheet.md
+          cp docs/portfolio_project_brief.md public/docs/portfolio_project_brief.md
+          cp docs/assets/*.svg public/docs/assets/
           cp docs/observability_stack.md public/docs/observability_stack.md
           cp docs/adr/*.md public/docs/adr/
 

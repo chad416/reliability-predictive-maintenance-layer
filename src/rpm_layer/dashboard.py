@@ -61,6 +61,9 @@ def write_dashboard(
       border-bottom: 1px solid var(--line);
       background: #f3f6f9;
     }}
+    .header-meta {{ display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 14px; }}
+    .status {{ display: inline-block; border-radius: 999px; padding: 6px 10px; background: #e6f4ef; color: #116149; font-size: 11px; font-weight: 700; letter-spacing: .08em; }}
+    .scope {{ color: var(--muted); font-size: 12px; }}
     h1 {{ margin: 0 0 8px; font-size: 28px; letter-spacing: 0; }}
     h2 {{ margin: 0 0 14px; font-size: 18px; letter-spacing: 0; }}
     p {{ color: var(--muted); margin: 0; line-height: 1.45; }}
@@ -80,10 +83,18 @@ def write_dashboard(
     .warning {{ background: var(--warn); }}
     .advisory {{ background: var(--accent); }}
     .normal {{ background: var(--ok); }}
+    .system-map {{ border: 1px solid var(--line); border-radius: 8px; padding: 18px; background: linear-gradient(135deg, #f7fbfa, #f6f8fb); }}
+    .map-flow {{ display: grid; grid-template-columns: repeat(5, minmax(120px, 1fr)); gap: 10px; align-items: stretch; }}
+    .map-node {{ position: relative; border: 1px solid #b9d5cf; border-radius: 8px; padding: 14px 12px; background: #fff; min-height: 88px; font-weight: 700; color: var(--ink); }}
+    .map-node:not(:last-child)::after {{ content: "→"; position: absolute; right: -18px; top: 32px; color: var(--accent); font-size: 20px; font-weight: 700; z-index: 1; }}
+    .map-node span {{ display: block; color: var(--muted); font-size: 11px; font-weight: 400; line-height: 1.35; margin-top: 7px; }}
+    .system-note {{ margin-top: 12px; font-size: 12px; }}
     @media (max-width: 820px) {{
       header, main {{ padding-left: 18px; padding-right: 18px; }}
       .kpis {{ grid-template-columns: repeat(2, minmax(130px, 1fr)); }}
       table {{ font-size: 12px; }}
+      .map-flow {{ grid-template-columns: 1fr; }}
+      .map-node:not(:last-child)::after {{ content: "↓"; right: 50%; top: auto; bottom: -21px; transform: translateX(50%); }}
     }}
   </style>
 </head>
@@ -91,9 +102,21 @@ def write_dashboard(
   <header>
     <h1>{html.escape(title)}</h1>
     <p>Condition monitoring, explainable diagnostics, and maintenance recommendations for an industrial drive axis.</p>
+    <div class="header-meta"><span class="status">SOFTWARE-READY / HARDWARE PHASE 2</span><span class="scope">Simulation, validation, and OT/IT integration are complete; physical sensor commissioning is the next gate.</span></div>
   </header>
   <main>
     <div class="kpis" id="kpis"></div>
+    <section class="system-map">
+      <h2>Reliability loop</h2>
+      <div class="map-flow" role="img" aria-label="Telemetry flows through quality, features, diagnostics, and maintenance actions">
+        <div class="map-node">Telemetry<span>vibration · current · temperature · speed · load</span></div>
+        <div class="map-node">Quality gate<span>sampling · gaps · nulls · ranges</span></div>
+        <div class="map-node">Feature window<span>RMS · FFT · kurtosis · thermal slope</span></div>
+        <div class="map-node">Evidence rule<span>median/IQR deviation + severity</span></div>
+        <div class="map-node">Maintenance action<span>inspection · spares · verification</span></div>
+      </div>
+      <p class="system-note">The same contract can be fed by OPC UA, MQTT, or local DAQ adapters; the analytics and maintenance handoff remain unchanged.</p>
+    </section>
     <section>
       <h2>Condition Index Timeline</h2>
       <div class="chart"><svg id="conditionChart" role="img" aria-label="Condition index timeline"></svg></div>

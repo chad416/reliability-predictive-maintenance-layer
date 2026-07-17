@@ -12,6 +12,7 @@ EXPECTED_DIAGNOSIS = {
     "imbalance": "rotor_imbalance",
     "loose_mounting": "mechanical_looseness",
     "belt_tension_drift": "belt_tension_drift",
+    "elevated_friction": "elevated_friction",
     "overheating": "overheating",
 }
 
@@ -72,7 +73,7 @@ def validation_metrics(scored: pd.DataFrame) -> dict[str, Any]:
             "fault_window_recall_pct": 0.0,
             "healthy_false_alert_rate_pct": 0.0,
             "detected_fault_classes": 0,
-            "expected_fault_classes": 4,
+            "expected_fault_classes": max(len(EXPECTED_DIAGNOSIS) - 1, 0),
         }
     working = scored.copy()
     working["expected_diagnosis"] = working["fault_label_majority"].map(EXPECTED_DIAGNOSIS).fillna("unknown")
@@ -107,4 +108,3 @@ def write_validation_artifacts(scored: pd.DataFrame, out_dir: str | Path) -> tup
     matrix.to_csv(target / "confusion_matrix.csv", index=False)
     write_json(target / "validation_metrics.json", metrics)
     return summary, matrix, metrics
-

@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 620" role="img" aria-labelledby="title desc">
+  <title id="title">Diagnostic evidence map</title>
+  <desc id="desc">The feature families used to distinguish imbalance, looseness, belt drift, friction, and overheating are linked to maintenance responses.</desc>
+  <defs>
+    <linearGradient id="bg2" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#101426"/><stop offset="1" stop-color="#222445"/></linearGradient>
+    <linearGradient id="green" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#8ee3cf"/><stop offset="1" stop-color="#248d86"/></linearGradient>
+    <linearGradient id="orange" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#ffd166"/><stop offset="1" stop-color="#db6d35"/></linearGradient>
+    <marker id="arrow2" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#99a5d4"/></marker>
+    <style>.h{font:700 28px Arial,sans-serif;fill:#f5f7ff}.t{font:600 18px Arial,sans-serif;fill:#f5f7ff}.s{font:14px Arial,sans-serif;fill:#bbc0df}.caps{font:12px Arial,sans-serif;fill:#8ee3cf;letter-spacing:1.5px}.line{fill:none;stroke:#99a5d4;stroke-width:2;marker-end:url(#arrow2)}.card{fill:#191d36;stroke:#474d74;stroke-width:2}</style>
+  </defs>
+  <rect width="1400" height="620" rx="30" fill="url(#bg2)"/>
+  <text x="60" y="70" class="caps">EXPLAINABLE DIAGNOSTICS / NO BLACK-BOX ALARM</text>
+  <text x="60" y="112" class="h">A fault label is only useful when the evidence tells maintenance what to do</text>
+
+  <g>
+    <rect x="60" y="160" width="300" height="350" rx="20" class="card"/>
+    <text x="90" y="205" class="caps">FEATURE FAMILIES</text>
+    <text x="90" y="250" class="t">Vibration</text><text x="90" y="276" class="s">RMS · kurtosis · crest factor</text><text x="90" y="298" class="s">FFT 1x / 2x · broadband</text>
+    <text x="90" y="352" class="t">Electrical</text><text x="90" y="378" class="s">mean · variation</text><text x="90" y="400" class="s">load-normalized current</text>
+    <text x="90" y="454" class="t">Thermal / process</text><text x="90" y="480" class="s">temperature level · slope</text>
+  </g>
+
+  <g>
+    <rect x="475" y="150" width="360" height="74" rx="16" fill="url(#green)"/>
+    <rect x="475" y="245" width="360" height="74" rx="16" fill="url(#green)"/>
+    <rect x="475" y="340" width="360" height="74" rx="16" fill="url(#orange)"/>
+    <rect x="475" y="435" width="360" height="74" rx="16" fill="url(#orange)"/>
+    <text x="510" y="180" class="t">Rotor imbalance</text><text x="510" y="204" class="s" fill="#08221f">1x vibration + RMS + mild current</text>
+    <text x="510" y="275" class="t">Mechanical looseness</text><text x="510" y="299" class="s" fill="#08221f">impact shape + broadband energy</text>
+    <text x="510" y="370" class="t">Belt drift / friction</text><text x="510" y="394" class="s" fill="#34170e">current at comparable load + thermal trend</text>
+    <text x="510" y="465" class="t">Overheating</text><text x="510" y="489" class="s" fill="#34170e">temperature level + positive slope</text>
+  </g>
+  <path d="M360 250H475M360 320H475M360 390H475M360 460H475" class="line"/>
+
+  <g>
+    <rect x="1010" y="160" width="320" height="350" rx="20" class="card"/>
+    <text x="1045" y="205" class="caps">MAINTENANCE HANDOFF</text>
+    <text x="1045" y="252" class="t">Inspect / torque</text><text x="1045" y="276" class="s">mounts, brackets, couplings</text>
+    <text x="1045" y="326" class="t">Adjust / replace</text><text x="1045" y="350" class="s">belt, roller, bearing, fan</text>
+    <text x="1045" y="400" class="t">Controlled stop</text><text x="1045" y="424" class="s">when score persists or rises</text>
+    <text x="1045" y="474" class="t">Verify / govern</text><text x="1045" y="498" class="s">return to baseline before update</text>
+  </g>
+  <path d="M835 187H1010M835 282H1010M835 377H1010M835 472H1010" class="line"/>
+  <text x="60" y="572" class="s">Each alert carries raw feature values plus robust baseline scores so a technical reviewer can audit the decision.</text>
+</svg>

@@ -6,6 +6,7 @@
 | Detect rotor imbalance using explainable evidence | `output/demo/alert_episodes.csv`, report alert table | `src/rpm_layer/detector.py` |
 | Detect mechanical looseness using impact/broadband evidence | `output/demo/alert_episodes.csv`, FMEA worksheet | `src/rpm_layer/detector.py`, `docs/fmea.md` |
 | Detect belt tension drift with current-led symptoms | `output/demo/validation_summary.csv` | `src/rpm_layer/simulator.py`, `src/rpm_layer/detector.py` |
+| Detect elevated friction with load-normalized current and thermal slope | `output/demo/validation_summary.csv`, root-cause notes | `src/rpm_layer/features.py`, `src/rpm_layer/simulator.py`, `src/rpm_layer/detector.py` |
 | Detect overheating with thermal level and slope | `output/demo/alert_episodes.csv` | `src/rpm_layer/detector.py` |
 | Keep healthy operation free from nuisance alerts | `output/demo/validation_metrics.json` | `src/rpm_layer/validation.py` |
 | Prove telemetry is usable before analytics | `output/demo/data_quality.json` | `src/rpm_layer/quality.py` |
@@ -17,8 +18,10 @@
 | Analyze condition windows as telemetry arrives | Live monitor summary and batch-equivalence tests | `src/rpm_layer/monitor.py`, `tests/test_monitor.py` |
 | Deploy historian, broker, and live dashboard | Provisioned Docker Compose stack and Grafana dashboard | `docker-compose.yml`, `grafana/provisioning/`, `deploy/mosquitto.conf` |
 | Provide RAM/FMEA-style engineering documentation | `docs/fmea.md`, `docs/fault_tree.md`, `docs/maintenance_strategy.md` | Documentation pack |
+| Provide root-cause notes and KPI definitions | `docs/seeded_fault_root_cause_notes.md`, `docs/kpi_definition_sheet.md` | Documentation pack |
+| Provide portfolio-ready visuals and project copy | `docs/assets/*.svg`, `docs/portfolio_project_brief.md` | Portfolio evidence pack |
 | Provide CI-verifiable reproducibility | GitHub Actions CI run | `.github/workflows/ci.yml` |
 
 ## Acceptance Evidence
 
-The demo scenario intentionally includes normal operation and four seeded faults: rotor imbalance, mechanical looseness, belt tension drift, and overheating. The validation artifacts report detection counts, detection delay, confusion matrix, window accuracy, fault-window recall, and healthy false-alert rate.
+The demo scenario intentionally includes normal operation and five seeded faults: rotor imbalance, mechanical looseness, belt tension drift, elevated friction, and overheating. The validation artifacts report detection counts, detection delay, confusion matrix, window accuracy, fault-window recall, and healthy false-alert rate.

@@ -15,9 +15,12 @@ FEATURE_COLUMNS = [
     "vib_crest_factor",
     "vib_fft_1x_g",
     "vib_fft_2x_g",
+    "vib_low_frequency_peak_g",
+    "vib_friction_peak_g",
     "vib_broadband_g",
     "current_mean_a",
     "current_std_a",
+    "current_load_normalized_a",
     "temperature_mean_c",
     "temperature_slope_c_per_min",
     "acoustic_mean_db",
@@ -85,4 +88,3 @@ def save_baseline(baseline: dict[str, Any], path: str | Path) -> None:
 
 def load_baseline(path: str | Path) -> dict[str, Any]:
     return load_json(path)
-

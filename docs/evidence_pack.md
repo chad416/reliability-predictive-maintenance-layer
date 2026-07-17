@@ -21,5 +21,9 @@ The project generates a complete review pack with `python scripts/run_demo.py`.
 | `output/live/live_monitor_summary.json` | Stateful chunk-processing counts and incomplete-buffer evidence |
 | `output/live/live_alerts.csv` | Alerts emitted as event-time windows close |
 | `output/live/live_condition_windows.lp` | Online condition windows ready for historian ingestion |
+| `docs/assets/reliability_architecture.svg` | Portfolio architecture visual |
+| `docs/assets/diagnostic_evidence.svg` | Symptom-to-diagnosis-to-action visual |
+| `docs/assets/maintenance_loop.svg` | Closed-loop maintenance visual |
+| `docs/project_completion_status.md` | Honest release gate and hardware boundary |
 
-The raw telemetry file is intentionally ignored because it is reproducible and large. Reviewers should regenerate it instead of versioning it.
+The raw telemetry file is intentionally ignored because it is reproducible and large. Reviewers should regenerate it instead of versioning it. The committed dashboard and visual SVGs remain lightweight entry points for a recruiter or technical reviewer.

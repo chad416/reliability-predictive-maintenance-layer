@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 620" role="img" aria-labelledby="title desc">
+  <title id="title">Reliability and predictive-maintenance architecture</title>
+  <desc id="desc">Industrial telemetry moves through quality, feature extraction, robust baseline scoring, explainable diagnostics, and maintenance actions, with historian and dashboard branches.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#0b1724"/><stop offset="1" stop-color="#132c3a"/></linearGradient>
+    <linearGradient id="teal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#28d7c1"/><stop offset="1" stop-color="#0a806f"/></linearGradient>
+    <linearGradient id="amber" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffd166"/><stop offset="1" stop-color="#c7811c"/></linearGradient>
+    <filter id="shadow"><feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#06101a" flood-opacity=".55"/></filter>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#83aaba"/></marker>
+    <style>
+      .label{font:600 20px Arial,sans-serif;fill:#ecf7f8}.small{font:14px Arial,sans-serif;fill:#a8c2cb}.tiny{font:12px Arial,sans-serif;fill:#a8c2cb;letter-spacing:1px;text-transform:uppercase}.box{stroke:#4f7382;stroke-width:2}.flow{fill:none;stroke:#83aaba;stroke-width:3;marker-end:url(#arrow)}
+    </style>
+  </defs>
+  <rect width="1400" height="620" rx="30" fill="url(#bg)"/>
+  <g opacity=".18" stroke="#8ad4d0"><path d="M40 90H1360M40 180H1360M40 270H1360M40 360H1360M40 450H1360M40 540H1360"/><path d="M100 30V590M220 30V590M340 30V590M460 30V590M580 30V590M700 30V590M820 30V590M940 30V590M1060 30V590M1180 30V590M1300 30V590"/></g>
+  <text x="70" y="68" class="tiny">RPM-LAYER / SOFTWARE FAT VIEW</text>
+  <text x="70" y="108" class="label" font-size="30">From sensor evidence to a maintenance decision</text>
+
+  <g filter="url(#shadow)">
+    <rect x="70" y="180" width="210" height="150" rx="18" fill="#173746" class="box"/>
+    <rect x="330" y="180" width="210" height="150" rx="18" fill="#173746" class="box"/>
+    <rect x="590" y="180" width="210" height="150" rx="18" fill="#173746" class="box"/>
+    <rect x="850" y="180" width="210" height="150" rx="18" fill="#173746" class="box"/>
+    <rect x="1110" y="180" width="220" height="150" rx="18" fill="#173746" class="box"/>
+  </g>
+  <path d="M280 255H330M540 255H590M800 255H850M1060 255H1110" class="flow"/>
+
+  <g>
+    <circle cx="112" cy="220" r="16" fill="url(#teal)"/><text x="142" y="228" class="tiny">01 / ACQUIRE</text>
+    <text x="95" y="270" class="label">Telemetry</text><text x="95" y="297" class="small">vibration · current</text><text x="95" y="319" class="small">temperature · speed · load</text>
+    <circle cx="372" cy="220" r="16" fill="url(#teal)"/><text x="402" y="228" class="tiny">02 / GATE</text>
+    <text x="355" y="270" class="label">Quality</text><text x="355" y="297" class="small">sampling and gaps</text><text x="355" y="319" class="small">nulls · ranges · order</text>
+    <circle cx="632" cy="220" r="16" fill="url(#teal)"/><text x="662" y="228" class="tiny">03 / EXTRACT</text>
+    <text x="615" y="270" class="label">Features</text><text x="615" y="297" class="small">RMS · kurtosis · FFT</text><text x="615" y="319" class="small">thermal slope · load-normalized I</text>
+    <circle cx="892" cy="220" r="16" fill="url(#amber)"/><text x="922" y="228" class="tiny">04 / DIAGNOSE</text>
+    <text x="875" y="270" class="label">Evidence</text><text x="875" y="297" class="small">median/IQR baseline</text><text x="875" y="319" class="small">rule score + severity</text>
+    <circle cx="1152" cy="220" r="16" fill="url(#amber)"/><text x="1182" y="228" class="tiny">05 / ACT</text>
+    <text x="1135" y="270" class="label">Maintenance</text><text x="1135" y="297" class="small">action · spares · stop class</text><text x="1135" y="319" class="small">verification evidence</text>
+  </g>
+
+  <path d="M435 330V420H680" class="flow"/><path d="M695 330V420H680" class="flow"/><path d="M955 330V420H680" class="flow"/>
+  <rect x="460" y="430" width="440" height="105" rx="18" fill="#0f2632" stroke="#d3a248" stroke-width="2" filter="url(#shadow)"/>
+  <text x="500" y="467" class="tiny" fill="#ffd166">OPERATIONS VISIBILITY</text>
+  <text x="500" y="500" class="label">InfluxDB · Grafana · MQTT · OPC UA</text>
+  <text x="500" y="523" class="small">durable spool protects telemetry during service outages</text>
+  <path d="M1115 330V420H900" class="flow"/>
+  <text x="70" y="570" class="small">Hardware adapter boundary: OPC UA / MQTT / local DAQ can replace the simulator without changing the analytics contract.</text>
+</svg>

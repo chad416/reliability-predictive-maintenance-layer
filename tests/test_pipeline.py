@@ -63,7 +63,7 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(quality["sample_count"], len(telemetry))
         self.assertIn("condition_index", scored.columns)
         self.assertGreater(scored["condition_index"].max(), 10.0)
-        expected = {"rotor_imbalance", "mechanical_looseness", "belt_tension_drift", "overheating"}
+        expected = {"rotor_imbalance", "mechanical_looseness", "belt_tension_drift", "elevated_friction", "overheating"}
         self.assertFalse(alerts.empty)
         self.assertFalse(recommendations.empty)
         self.assertTrue(expected.issubset(set(recommendations["diagnosis"])))
@@ -75,6 +75,13 @@ class PipelineTests(unittest.TestCase):
         self.assertTrue(all(order["status"] == "ready_for_maintenance_review" for order in work_orders))
         self.assertGreater(len(mqtt_messages), len(recommendations))
         self.assertIn("Assets/MHC-CONV-AXIS-01/Condition/ConditionIndex", opcua_snapshot["nodes"])
+
+    def test_speed_and_load_variation_without_faults_has_no_nuisance_alerts(self) -> None:
+        healthy = generate_telemetry(PROFILE, duration_s=240.0, seed=19, include_faults=False)
+        features = extract_features(healthy, sampling_hz=PROFILE.sampling_hz)
+        baseline = fit_baseline(features)
+        scored = score_features(features, baseline)
+        self.assertTrue(detect_alerts(scored).empty)
 
 
 if __name__ == "__main__":

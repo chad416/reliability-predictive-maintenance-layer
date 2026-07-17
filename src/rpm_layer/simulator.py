@@ -33,8 +33,9 @@ def mixed_fault_schedule(duration_s: float) -> list[FaultSegment]:
     return [
         FaultSegment(240 * scale, 420 * scale, "imbalance", 0.25, 0.9),
         FaultSegment(560 * scale, 760 * scale, "loose_mounting", 0.2, 0.95),
-        FaultSegment(830 * scale, 1010 * scale, "belt_tension_drift", 0.25, 0.85),
-        FaultSegment(1010 * scale, 1160 * scale, "overheating", 0.25, 1.0),
+        FaultSegment(830 * scale, 960 * scale, "belt_tension_drift", 0.25, 0.85),
+        FaultSegment(960 * scale, 1030 * scale, "elevated_friction", 0.4, 0.9),
+        FaultSegment(1050 * scale, 1160 * scale, "overheating", 0.25, 1.0),
     ]
 
 
@@ -55,15 +56,16 @@ def generate_telemetry(
     sampling_hz: float | None = None,
     seed: int = 7,
     start: datetime | None = None,
+    include_faults: bool = True,
 ) -> pd.DataFrame:
-    """Generate industrially plausible motor telemetry with seeded maintenance faults."""
+    """Generate industrially plausible motor telemetry with optional seeded faults."""
     fs = float(sampling_hz or profile.sampling_hz)
     sample_count = int(duration_s * fs)
     t_s = np.arange(sample_count, dtype=float) / fs
     rng = np.random.default_rng(seed)
     start_time = start or datetime(2026, 7, 1, 8, 0, 0)
 
-    schedule = mixed_fault_schedule(duration_s)
+    schedule = mixed_fault_schedule(duration_s) if include_faults else []
     fault_label, fault_severity = _active_faults(t_s, schedule)
 
     speed_command = profile.nominal_speed_rpm * (
@@ -102,7 +104,7 @@ def generate_telemetry(
     temperature_c = 31.0 + thermal_drive + 1.2 * np.sin(2 * np.pi * t_s / 900.0)
     acoustic_db = 58.0 + 0.025 * load_pct + rng.normal(0.0, 0.6, sample_count)
 
-    for label in ("imbalance", "loose_mounting", "belt_tension_drift", "overheating"):
+    for label in ("imbalance", "loose_mounting", "belt_tension_drift", "elevated_friction", "overheating"):
         sev = np.where(fault_label == label, fault_severity, 0.0)
         if not np.any(sev):
             continue
@@ -122,6 +124,12 @@ def generate_telemetry(
             current_a += sev * (0.62 + 0.0045 * load_pct)
             temperature_c += sev * 4.2
             acoustic_db += sev * 2.7
+        elif label == "elevated_friction":
+            time_in_fault = np.maximum(t_s - np.min(t_s[sev > 0]), 0.0)
+            vibration_g += sev * (0.018 * np.sin(2 * np.pi * t_s * 2.5))
+            current_a += sev * (0.45 + 0.002 * load_pct)
+            temperature_c += sev * (3.0 + 0.025 * time_in_fault)
+            acoustic_db += sev * 1.8
         elif label == "overheating":
             time_in_fault = np.maximum(t_s - np.min(t_s[sev > 0]), 0.0)
             temperature_c += sev * (6.5 + 0.035 * time_in_fault)

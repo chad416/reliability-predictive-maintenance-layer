@@ -26,6 +26,6 @@ Factory acceptance testing for the reliability and predictive-maintenance layer 
 
 - No runtime errors.
 - At least one seeded fault generates a maintenance recommendation.
+- All five seeded fault classes generate a diagnostic path or are explicitly reported as a validation miss.
 - The report and dashboard are reproducible from source data.
 - Alarm explanations include measurable evidence, not only a label.
-

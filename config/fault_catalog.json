@@ -14,9 +14,12 @@
     "maps_to_diagnosis": "belt_tension_drift",
     "seeded_symptoms": ["load-normalized current rise", "moderate temperature trend", "low-frequency vibration"]
   },
+  "elevated_friction": {
+    "maps_to_diagnosis": "elevated_friction",
+    "seeded_symptoms": ["load-normalized current rise", "positive temperature slope", "moderate acoustic increase"]
+  },
   "overheating": {
     "maps_to_diagnosis": "overheating",
     "seeded_symptoms": ["temperature threshold crossing", "positive thermal slope", "slightly elevated current"]
   }
 }
-

@@ -15,8 +15,10 @@
 | VAL-002 | Rotor imbalance | Elevated 1x FFT and vibration RMS | Rotor imbalance warning before end of segment |
 | VAL-003 | Loose mounting | Crest factor, kurtosis, broadband vibration | Mechanical looseness alert generated |
 | VAL-004 | Belt tension drift | Load-normalized current and thermal rise | Belt tension drift recommendation generated |
-| VAL-005 | Overheating | Temperature mean and slope | Overheating warning or critical alert generated |
-| VAL-006 | Sensor mounting issue | Vibration evidence without process correlation | Sensor issue recommendation generated when seeded in future acquisition tests |
+| VAL-005 | Elevated friction | Load-normalized current and positive thermal slope at comparable speed/load | Elevated friction recommendation generated |
+| VAL-006 | Overheating | Temperature mean and slope | Overheating warning or critical alert generated |
+| VAL-007 | Healthy speed/load variation | Changing speed and load without a fault label | No nuisance warning or critical episode |
+| VAL-008 | Sensor mounting issue | Vibration evidence without process correlation | Sensor issue recommendation generated when seeded in future acquisition tests |
 
 ## Metrics
 
@@ -25,4 +27,4 @@
 - False alert count during healthy windows.
 - Maximum condition index.
 - Completeness of recommendation fields: action, inspection, spares, downtime, verification.
-
+- Nuisance alarm rate during healthy speed and load variation.

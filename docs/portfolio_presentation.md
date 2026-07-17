@@ -3,9 +3,11 @@
 ## One-Minute Demo
 
 1. Show the dashboard KPI cards and condition timeline.
-2. Point to a seeded imbalance or looseness episode.
+2. Point to a seeded imbalance, looseness, or friction episode and show the raw feature plus robust score.
 3. Open the maintenance recommendation and evidence fields.
 4. State how the same pipeline connects to OPC UA or MQTT telemetry from the motion bench or material-handling cell.
+
+Use the three SVGs under `docs/assets/` as the repository and portfolio thumbnail set. They explain the architecture, the diagnostic evidence chain, and the maintenance closure loop without requiring the reviewer to read the full codebase.
 
 ## Six-Minute Engineering Walkthrough
 
@@ -23,4 +25,3 @@
 - Predictive maintenance is only useful when it closes the loop into work orders, spares, and verification.
 - Baselines are engineering artifacts and need governance.
 - False positives damage trust, so nuisance alarms must be measured and controlled.
-

@@ -5,14 +5,16 @@
 
 This repository is a portfolio-grade reliability engineering and predictive-maintenance layer for an industrial motion bench or material-handling micro-cell. It is intentionally more than a notebook: it includes telemetry simulation, signal feature extraction, explainable fault detection, maintenance recommendations, FMEA/FTA documentation, validation evidence, and a self-contained dashboard.
 
+**Release status: software-ready / hardware Phase 2.** The simulation, analytics, documentation, observability contracts, validation pack, and portfolio visuals are complete. Physical ADXL355/ADXL356-class sensing, current/temperature wiring, sensor mounting, and measured baseline commissioning remain the explicitly documented next phase.
+
 The design follows the project brief: condition monitoring for motor vibration, current, and temperature; alarm thresholds tied to measured evidence; rooted fault narratives; and maintenance actions that are useful to RAM/LCC, commissioning, quality, and connected-services teams.
 
 ## What It Demonstrates
 
 - Industrial telemetry pipeline for vibration, current, temperature, speed, load, and acoustic data.
-- Classical signal features before ML: RMS, kurtosis, crest factor, FFT 1x/2x components, broadband energy, temperature slope, and current variation.
+- Classical signal features before ML: RMS, kurtosis, crest factor, FFT 1x/2x and low-frequency components, broadband energy, temperature slope, current variation, and load-normalized current.
 - Robust baseline learning from healthy windows using median and IQR statistics.
-- Explainable diagnostics for rotor imbalance, mechanical looseness, belt tension drift, overheating, and sensor or mounting issues.
+- Explainable diagnostics for rotor imbalance, mechanical looseness, belt tension drift, elevated friction, overheating, and sensor or mounting issues.
 - Maintenance action matrix with priority, inspection steps, spares, downtime class, and verification checks.
 - Documentation pack: FMEA, fault tree, alarm rationalization, validation plan, FAT protocol, commissioning checklist, BOM, and OT/IT integration notes.
 - Reproducible demo pipeline and built-in unit tests.
@@ -20,6 +22,17 @@ The design follows the project brief: condition monitoring for motor vibration, 
 - Durable SQLite store-and-forward for ordered recovery after historian or broker outages.
 - Stateful online condition windowing that remains equivalent to the commissioned batch analytics.
 - Provisioned InfluxDB, Grafana, and Mosquitto edge stack with health checks and a schema-aligned live dashboard.
+
+## Portfolio Visuals
+
+The repository includes recruiter-facing visuals that make the engineering story scannable before a reviewer opens the code:
+
+- [Reliability architecture](docs/assets/reliability_architecture.svg): telemetry-to-maintenance flow and OT/IT boundary.
+- [Diagnostic evidence map](docs/assets/diagnostic_evidence.svg): symptoms, rules, and maintenance actions.
+- [Closed-loop maintenance workflow](docs/assets/maintenance_loop.svg): sense, alert, act, verify, govern.
+- [Portfolio project brief](docs/portfolio_project_brief.md): concise copy and the honest hardware boundary for a project page.
+
+![Reliability architecture](docs/assets/reliability_architecture.svg)
 
 ## Quick Start
 
@@ -114,6 +127,10 @@ The generated evidence pack is designed for engineering review:
 - [Field validation protocol](docs/field_validation_protocol.md)
 - [Interview walkthrough](docs/interview_walkthrough.md)
 - [Known limitations](docs/known_limitations.md)
+- [Project completion status](docs/project_completion_status.md)
+- [Seeded-fault root-cause notes](docs/seeded_fault_root_cause_notes.md)
+- [KPI definition sheet](docs/kpi_definition_sheet.md)
+- [Portfolio project brief](docs/portfolio_project_brief.md)
 - [Observability stack runbook](docs/observability_stack.md)
 - [Architecture decision records](docs/adr/0001-classical-features-before-ml.md)
 

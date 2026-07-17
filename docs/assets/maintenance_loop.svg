@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 360" role="img" aria-labelledby="title desc">
+  <title id="title">Closed-loop maintenance workflow</title>
+  <desc id="desc">A closed loop connects sensing, condition scoring, alarms, work orders, verification, and baseline governance.</desc>
+  <defs>
+    <linearGradient id="bg3" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#102622"/><stop offset="1" stop-color="#223a32"/></linearGradient>
+    <linearGradient id="node3" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d9f99d"/><stop offset="1" stop-color="#44a779"/></linearGradient>
+    <marker id="arrow3" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#bee8cb"/></marker>
+    <style>.h{font:700 26px Arial,sans-serif;fill:#effff2}.t{font:600 17px Arial,sans-serif;fill:#0e241c}.s{font:13px Arial,sans-serif;fill:#c3e1cf}.flow{fill:none;stroke:#bee8cb;stroke-width:3;marker-end:url(#arrow3)}</style>
+  </defs>
+  <rect width="1400" height="360" rx="28" fill="url(#bg3)"/>
+  <text x="58" y="58" class="h">Reliability is a loop, not a score</text>
+  <g>
+    <rect x="60" y="125" width="180" height="100" rx="18" fill="url(#node3)"/><rect x="290" y="125" width="180" height="100" rx="18" fill="url(#node3)"/><rect x="520" y="125" width="180" height="100" rx="18" fill="url(#node3)"/><rect x="750" y="125" width="180" height="100" rx="18" fill="url(#node3)"/><rect x="980" y="125" width="180" height="100" rx="18" fill="url(#node3)"/><rect x="1210" y="125" width="130" height="100" rx="18" fill="url(#node3)"/>
+    <text x="90" y="165" class="t">Sense</text><text x="90" y="190" class="s" fill="#204f3d">telemetry</text>
+    <text x="320" y="165" class="t">Condition</text><text x="320" y="190" class="s" fill="#204f3d">feature window</text>
+    <text x="550" y="165" class="t">Alarm</text><text x="550" y="190" class="s" fill="#204f3d">evidence + severity</text>
+    <text x="780" y="165" class="t">Act</text><text x="780" y="190" class="s" fill="#204f3d">work order + spares</text>
+    <text x="1010" y="165" class="t">Verify</text><text x="1010" y="190" class="s" fill="#204f3d">return to baseline</text>
+    <text x="1234" y="165" class="t">Govern</text><text x="1234" y="190" class="s" fill="#204f3d">update</text>
+  </g>
+  <path d="M240 175H290M470 175H520M700 175H750M930 175H980M1160 175H1210" class="flow"/>
+  <path d="M1275 225C1275 290 120 300 150 225" class="flow"/>
+  <text x="410" y="315" class="s">Never update a healthy baseline immediately after a fault; close the maintenance action first.</text>
+</svg>

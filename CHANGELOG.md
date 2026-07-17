@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.0 - Reliability evidence and friction diagnostics
+
+- Added elevated-friction seeded validation alongside imbalance, looseness, belt drift, and overheating.
+- Added load-normalized current and low-frequency/friction vibration features.
+- Improved alert evidence with raw feature values and robust baseline scores.
+- Added project completion status, KPI definitions, root-cause notes, portfolio brief, and recruiter-facing SVG visuals.
+- Upgraded the static dashboard with an explicit software-ready / hardware-Phase-2 boundary and reliability loop.
+
 ## 0.5.0 - Streaming and Observability
 
 - Added paced telemetry replay with batched JSONL, InfluxDB, and optional MQTT sinks.

@@ -24,10 +24,17 @@ RULES = {
     ),
     "belt_tension_drift": DiagnosticRule(
         diagnosis="belt_tension_drift",
-        evidence_fields=("score_current_mean_a", "score_temperature_mean_c", "score_vib_broadband_g"),
+        evidence_fields=("score_current_load_normalized_a", "score_vib_low_frequency_peak_g", "score_temperature_mean_c"),
         advisory_score=1.25,
         warning_score=2.5,
         critical_score=4.5,
+    ),
+    "elevated_friction": DiagnosticRule(
+        diagnosis="elevated_friction",
+        evidence_fields=("score_current_load_normalized_a", "score_vib_friction_peak_g", "score_temperature_slope_c_per_min"),
+        advisory_score=1.6,
+        warning_score=3.5,
+        critical_score=6.0,
     ),
     "overheating": DiagnosticRule(
         diagnosis="overheating",
@@ -64,9 +71,12 @@ def _diagnostic_scores(row: pd.Series) -> dict[str, float]:
     two_x = _positive(row, "score_vib_fft_2x_g")
     vib_rms = _positive(row, "score_vib_rms_g")
     current = _positive(row, "score_current_mean_a")
+    current_load = _positive(row, "score_current_load_normalized_a")
     kurtosis = _positive(row, "score_vib_kurtosis")
     crest = _positive(row, "score_vib_crest_factor")
     broadband = _positive(row, "score_vib_broadband_g")
+    low_frequency = _positive(row, "score_vib_low_frequency_peak_g")
+    friction_peak = _positive(row, "score_vib_friction_peak_g")
     temp = _positive(row, "score_temperature_mean_c")
     temp_slope = _positive(row, "score_temperature_slope_c_per_min")
 
@@ -76,7 +86,8 @@ def _diagnostic_scores(row: pd.Series) -> dict[str, float]:
     return {
         "rotor_imbalance": imbalance_shape * (0.58 * one_x + 0.32 * vib_rms + 0.10 * current),
         "mechanical_looseness": 0.25 * kurtosis + 0.25 * crest + 0.35 * broadband + 0.15 * vib_rms,
-        "belt_tension_drift": 0.55 * current + 0.30 * temp + 0.15 * broadband,
+        "belt_tension_drift": 0.50 * current_load + 0.35 * low_frequency + 0.15 * temp,
+        "elevated_friction": 0.40 * current_load + 0.35 * friction_peak + 0.25 * temp_slope,
         "overheating": 0.58 * temp + 0.32 * temp_slope + 0.10 * current,
         "sensor_or_mounting_issue": 0.35 * sensor_decoupling + 0.15 * crest + 0.10 * broadband,
     }
@@ -91,11 +102,14 @@ def detect_alerts(scored_features: pd.DataFrame) -> pd.DataFrame:
         severity = severity_from_score(score, rule)
         if severity == "normal":
             continue
-        evidence = {
-            field: round(_value(row, field), 3)
-            for field in rule.evidence_fields
-            if field in row
-        }
+        evidence = []
+        for field in rule.evidence_fields:
+            if field not in row:
+                continue
+            raw_field = field.removeprefix("score_")
+            raw_value = _value(row, raw_field)
+            score_value = _value(row, field)
+            evidence.append(f"{raw_field}={raw_value:.5g} (robust_score={score_value:.3f})")
         rows.append(
             {
                 "window_start": row["window_start"],
@@ -105,7 +119,7 @@ def detect_alerts(scored_features: pd.DataFrame) -> pd.DataFrame:
                 "diagnosis": diagnosis,
                 "diagnostic_score": round(float(score), 3),
                 "condition_index": round(float(row.get("condition_index", 0.0)), 2),
-                "evidence": "; ".join(f"{key}={value}" for key, value in evidence.items()),
+                "evidence": "; ".join(evidence),
                 "validated_fault_label": str(row.get("fault_label_majority", "unknown")),
             }
         )

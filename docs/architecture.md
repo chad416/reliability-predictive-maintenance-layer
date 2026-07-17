@@ -26,7 +26,7 @@ flowchart LR
 ## Package Boundaries
 
 - `simulator.py` creates deterministic commissioning and seeded-fault data before hardware is available.
-- `features.py` is the signal-processing layer. It computes RMS, kurtosis, crest factor, FFT 1x/2x amplitudes, broadband vibration, current statistics, and temperature slope.
+- `features.py` is the signal-processing layer. It computes RMS, kurtosis, crest factor, FFT 1x/2x and low-frequency/friction peaks, broadband vibration, current statistics, load-normalized current, and temperature slope.
 - `baseline.py` fits robust healthy behavior using median/IQR statistics.
 - `detector.py` maps evidence to explainable diagnostic scores and alert severities.
 - `recommender.py` converts alert episodes into maintenance actions, spares, downtime class, and verification criteria.

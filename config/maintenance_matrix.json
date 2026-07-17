@@ -35,6 +35,18 @@
     "spares": ["belt", "idler roller", "tensioner hardware"],
     "verification": "Load-normalized current returns to baseline and no new temperature rise appears."
   },
+  "elevated_friction": {
+    "priority": "P1",
+    "downtime_class": "controlled_stop_if_rising",
+    "recommended_action": "Inspect rollers, bearings, belt tracking, guards, and product drag; remove the source of mechanical resistance before returning to full duty.",
+    "inspection_steps": [
+      "Compare load-normalized current and temperature slope at the same speed.",
+      "Check roller bearings, belt tracking, guarding, and product accumulation for drag.",
+      "Run unloaded and loaded verification cycles after the obstruction or friction source is corrected."
+    ],
+    "spares": ["idler roller", "bearing insert", "belt cleaner"],
+    "verification": "Load-normalized current and temperature slope return to baseline across two representative duty cycles."
+  },
   "overheating": {
     "priority": "P1",
     "downtime_class": "controlled_stop_if_rising",
@@ -68,4 +80,3 @@
     "verification": "Routine trend review at the next maintenance interval."
   }
 }
-
